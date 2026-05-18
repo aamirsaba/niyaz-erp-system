@@ -1,0 +1,12 @@
+{
+  "name": "niyaz-erp-full",
+  "version": "2.0.0",
+  "description": "Complete ERP for Niyaz International Group",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

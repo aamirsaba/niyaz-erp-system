@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM - Niyaz ERP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="niyaz_logo.png" alt="Niyaz">
+                <span>Niyaz Group ERP</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html">📊 Dashboard</a>
+                <a href="company.html">🏢 Company Setup</a>
+		<a href="users.html">👤 User Management</a>
+                <a href="hr.html">👥 HR Management</a>
+                <a href="accounting.html">💰 Accounting & VAT</a>
+                <a href="projects.html">📋 Project Management</a>
+                <a href="crm.html" class="active">🤝 CRM</a>
+                <a href="alerts.html">🔔 Alerts</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <div class="company-selector">
+                    <label>🏢 Select Company:</label>
+                    <select id="companySelect"></select>
+                </div>
+                <div class="user-info">👋 Welcome, Admin</div>
+            </header>
+
+            <h1>🤝 Customer Relationship Management (CRM)</h1>
+
+            <!-- CRM Stats -->
+            <div class="stats-grid">
+                <div class="stat-card"><h3 id="totalClients">28</h3><p>Total Clients</p></div>
+                <div class="stat-card"><h3 id="activeLeads">12</h3><p>Active Leads</p></div>
+                <div class="stat-card"><h3 id="contractsExpiring">3</h3><p>Contracts Expiring</p></div>
+                <div class="stat-card vat"><h3 id="totalContractValue">1,250,000</h3><p>Contract Value (OMR)</p></div>
+            </div>
+
+            <!-- Tabs -->
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button onclick="showTab('clients')" id="tabClientsBtn" style="background:#1a4d8c;">🏢 Clients</button>
+                <button onclick="showTab('leads')" id="tabLeadsBtn">📈 Leads</button>
+		<button onclick="showTab('quotations')" id="tabQuotationsBtn">📄 Quotations</button>                
+		<button onclick="showTab('contracts')" id="tabContractsBtn">📄 Contracts</button>
+                <button onclick="showTab('activities')" id="tabActivitiesBtn">📞 Activities</button>
+            </div>
+
+            <!-- Clients Tab -->
+            <div id="clientsTab">
+                <div class="form-card">
+                    <h3>➕ Add New Client</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
+                        <input type="text" id="clientName" placeholder="Company Name">
+                        <input type="text" id="clientContact" placeholder="Contact Person">
+                        <input type="text" id="clientPhone" placeholder="Phone">
+                        <input type="email" id="clientEmail" placeholder="Email">
+                        <button onclick="addClient()">Add Client</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="clientsTable">
+                        <thead><tr><th>Company</th><th>Contact Person</th><th>Phone</th><th>Email</th><th>Active Contracts</th><th>Status</th></tr</thead>
+                        <tbody id="clientsList"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Leads Tab -->
+            <div id="leadsTab" style="display:none;">
+                <div class="form-card">
+                    <h3>➕ Add Lead</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
+                        <input type="text" id="leadName" placeholder="Lead Name">
+                        <input type="text" id="leadCompany" placeholder="Company">
+                        <input type="text" id="leadPhone" placeholder="Phone">
+                        <select id="leadStatus">
+                            <option>New</option><option>Contacted</option><option>Proposal Sent</option><option>Negotiation</option><option>Won</option><option>Lost</option>
+                        </select>
+                        <button onclick="addLead()">Add Lead</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="leadsTable">
+                        <thead><tr><th>Lead Name</th><th>Company</th><th>Phone</th><th>Status</th><th>Expected Value</th><th>Follow Up</th></tr</thead>
+                        <tbody id="leadsList"></tbody>
+                    </table>
+                </div>
+            </div>
+
+<!-- Quotations Tab -->
+<div id="quotationsTab" style="display:none;">
+    <div class="form-card">
+        <h3>📄 Create New Quotation</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
+            <select id="quotationClient">
+                <option>Al Mouj Group</option><option>Oman Air</option><option>City Centre Mall</option><option>Bank Muscat</option><option>Oman Oil</option>
+            </select>
+            <input type="text" id="quotationTitle" placeholder="Quotation Title / Service">
+            <input type="number" id="quotationAmount" placeholder="Amount (OMR)">
+            <input type="date" id="quotationDate">
+            <input type="date" id="quotationValidUntil" placeholder="Valid Until">
+            <select id="quotationStatus">
+                <option>Draft</option><option>Sent</option><option>Approved</option><option>Rejected</option><option>Converted to Contract</option>
+            </select>
+            <button onclick="createQuotation()">Create Quotation</button>
+        </div>
+    </div>
+
+    <!-- Quotation Stats -->
+    <div class="stats-grid">
+        <div class="stat-card"><h3 id="totalQuotations">0</h3><p>Total Quotations</p></div>
+        <div class="stat-card"><h3 id="pendingQuotations">0</h3><p>Pending / Sent</p></div>
+        <div class="stat-card"><h3 id="approvedQuotations">0</h3><p>Approved</p></div>
+        <div class="stat-card vat"><h3 id="quotationValue">0</h3><p>Total Value (OMR)</p></div>
+    </div>
+
+    <div class="table-container">
+        <h3>📋 Quotation Register</h3>
+        <table id="quotationsTable">
+            <thead>
+                <tr>
+                    <th>Q#</th><th>Date</th><th>Client</th><th>Title / Service</th><th>Amount (OMR)</th>
+                    <th>VAT (5%)</th><th>Total</th><th>Valid Until</th><th>Status</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="quotationsList"></tbody>
+        </table>
+    </div>
+
+    <!-- Convert to Contract Section -->
+    <div class="form-card" style="margin-top:20px;" id="convertSection" style="display:none;">
+        <h3>🔄 Convert Quotation to Contract</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 10px;">
+            <select id="convertQuotation"></select>
+            <input type="date" id="contractStartDate">
+            <input type="date" id="contractEndDate">
+            <button onclick="convertToContract()">✅ Convert to Contract</button>
+        </div>
+    </div>
+</div>
+            <!-- Contracts Tab -->
+            <div id="contractsTab" style="display:none;">
+                <div class="form-card">
+                    <h3>➕ Add Contract</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
+                        <select id="contractClient"></select>
+                        <input type="text" id="contractTitle" placeholder="Contract Title">
+                        <input type="number" id="contractValue" placeholder="Value (OMR)">
+                        <input type="date" id="contractStart">
+                        <input type="date" id="contractEnd">
+                        <button onclick="addContract()">Add Contract</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="contractsTable">
+                        <thead><tr><th>Client</th><th>Contract Title</th><th>Value</th><th>Start Date</th><th>End Date</th><th>Days Left</th><th>Status</th></tr</thead>
+                        <tbody id="contractsList"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Activities Tab -->
+            <div id="activitiesTab" style="display:none;">
+                <div class="form-card">
+                    <h3>➕ Log Activity</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
+                        <select id="activityClient"></select>
+                        <select id="activityType">
+                            <option>Call</option><option>Meeting</option><option>Email</option><option>Site Visit</option><option>Proposal</option>
+                        </select>
+                        <input type="text" id="activityNotes" placeholder="Notes">
+                        <input type="date" id="activityDate">
+                        <button onclick="addActivity()">Log Activity</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="activitiesTable">
+                        <thead><tr><th>Date</th><th>Client</th><th>Type</th><th>Notes</th><th>Follow Up</th></tr</thead>
+                        <tbody id="activitiesList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let clients = [
+            { id: 1, name: 'Al Mouj Group', contact: 'Ahmed Al Harthy', phone: '91234567', email: 'ahmed@almouj.com', contracts: 2, status: 'Active' },
+            { id: 2, name: 'Oman Air', contact: 'Salim Al Kindi', phone: '92345678', email: 'salim@omanair.com', contracts: 1, status: 'Active' },
+            { id: 3, name: 'City Centre Mall', contact: 'Mohammed Al Balushi', phone: '93456789', email: 'mohammed@citycentre.com', contracts: 1, status: 'Active' },
+            { id: 4, name: 'Bank Muscat', contact: 'Rashid Al Hinai', phone: '94567890', email: 'rashid@bankmuscat.com', contracts: 0, status: 'Lead' }
+        ];
+        
+        let leads = [
+            { name: 'Oman Oil', company: 'OOC', phone: '95678901', status: 'Negotiation', value: 250000, followUp: '2026-05-25' },
+            { name: 'Omantel', company: 'Omantel', phone: '96789012', status: 'Proposal Sent', value: 180000, followUp: '2026-05-22' }
+        ];
+        
+        let contracts = [
+            { client: 'Al Mouj Group', title: 'Facility Management', value: 450000, start: '2026-01-01', end: '2026-12-31', daysLeft: 227, status: 'Active' },
+            { client: 'Oman Air', title: 'HVAC Maintenance', value: 125000, start: '2026-04-01', end: '2027-03-31', daysLeft: 317, status: 'Active' },
+            { client: 'City Centre Mall', title: 'Cleaning Services', value: 95000, start: '2026-01-01', end: '2026-12-31', daysLeft: 227, status: 'Active' }
+        ];
+        
+        let activities = [
+            { date: '2026-05-16', client: 'Al Mouj Group', type: 'Meeting', notes: 'Contract renewal discussion', followUp: '2026-05-25' },
+            { date: '2026-05-15', client: 'Oman Oil', type: 'Proposal', notes: 'Sent proposal for FM services', followUp: '2026-05-22' }
+        ];
+
+        function loadCompanies() {
+            const companies = ['Niyaz International LLC', 'Niyaz Facilities Management', 'Niyaz Technical Services'];
+            const select = document.getElementById('companySelect');
+            if(select) select.innerHTML = companies.map(c => `<option>${c}</option>`).join('');
+        }
+
+        function loadClients() {
+            const tbody = document.getElementById('clientsList');
+            if(tbody) tbody.innerHTML = clients.map(c => `
+                <tr>
+                    <td><strong>${c.name}</strong></td>
+                    <td>${c.contact}</td>
+                    <td>${c.phone}</td>
+                    <td>${c.email}</td>
+                    <td>${c.contracts}</td>
+                    <td><span class="badge badge-active">${c.status}</span></td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('totalClients').textContent = clients.length;
+            document.getElementById('totalContractValue').textContent = '1,250,000';
+            
+            const selects = ['contractClient', 'activityClient'];
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if(select) select.innerHTML = clients.map(c => `<option>${c.name}</option>`).join('');
+            });
+        }
+
+        function loadLeads() {
+            const tbody = document.getElementById('leadsList');
+            if(tbody) tbody.innerHTML = leads.map(l => `
+                <tr>
+                    <td>${l.name}</td>
+                    <td>${l.company}</td>
+                    <td>${l.phone}</td>
+                    <td><span class="badge badge-pending">${l.status}</span></td>
+                    <td>${l.value.toLocaleString()}</td>
+                    <td>${l.followUp}</td>
+                </tr>
+            `).join('');
+            document.getElementById('activeLeads').textContent = leads.length;
+        }
+
+        function loadContracts() {
+            const tbody = document.getElementById('contractsList');
+            if(tbody) tbody.innerHTML = contracts.map(c => `
+                <tr>
+                    <td>${c.client}</td><td>${c.title}</td><td>${c.value.toLocaleString()}</td><td>${c.start}</td><td>${c.end}</td>
+                    <td>${c.daysLeft}</td><td><span class="badge badge-active">${c.status}</span></td>
+                </tr>
+            `).join('');
+            document.getElementById('contractsExpiring').textContent = contracts.filter(c => c.daysLeft < 30).length;
+        }
+
+        function loadActivities() {
+            const tbody = document.getElementById('activitiesList');
+            if(tbody) tbody.innerHTML = activities.map(a => `
+                <tr><td>${a.date}</td><td>${a.client}</td><td>${a.type}</td><td>${a.notes}</td><td>${a.followUp}</td></tr>
+            `).join('');
+        }
+
+        function addClient() {
+            const name = document.getElementById('clientName').value;
+            const contact = document.getElementById('clientContact').value;
+            const phone = document.getElementById('clientPhone').value;
+            const email = document.getElementById('clientEmail').value;
+            if(!name) return alert('Enter company name');
+            clients.push({ id: clients.length+1, name, contact, phone, email, contracts: 0, status: 'Active' });
+            loadClients();
+            alert('Client added!');
+        }
+
+        function addLead() {
+            const name = document.getElementById('leadName').value;
+            const company = document.getElementById('leadCompany').value;
+            const phone = document.getElementById('leadPhone').value;
+            const status = document.getElementById('leadStatus').value;
+            if(!name) return alert('Enter lead name');
+            leads.push({ name, company, phone, status, value: 0, followUp: new Date().toISOString().split('T')[0] });
+            loadLeads();
+            alert('Lead added!');
+        }
+
+        function addContract() {
+            const client = document.getElementById('contractClient').value;
+            const title = document.getElementById('contractTitle').value;
+            const value = document.getElementById('contractValue').value;
+            const start = document.getElementById('contractStart').value;
+            const end = document.getElementById('contractEnd').value;
+            if(!title) return alert('Enter contract title');
+            contracts.push({ client, title, value: parseInt(value), start, end, daysLeft: 30, status: 'Active' });
+            loadContracts();
+            alert('Contract added!');
+        }
+
+        function addActivity() {
+            const client = document.getElementById('activityClient').value;
+            const type = document.getElementById('activityType').value;
+            const notes = document.getElementById('activityNotes').value;
+            const date = document.getElementById('activityDate').value;
+            if(!notes) return alert('Enter notes');
+            activities.push({ date, client, type, notes, followUp: new Date().toISOString().split('T')[0] });
+            loadActivities();
+            alert('Activity logged!');
+        }
+	let quotations = [
+    	{ id: 'Q-2026-001', date: '2026-05-10', client: 'Al Mouj Group', title: 'Annual Facility Management', amount: 450000, validUntil: '2026-06-10', 	status: 'Approved' },
+    	{ id: 'Q-2026-002', date: '2026-05-12', client: 'Oman Oil', title: 'HVAC Maintenance Contract', amount: 125000, validUntil: '2026-06-12', status: 	'Sent' },
+    	{ id: 'Q-2026-003', date: '2026-05-15', client: 'Bank Muscat', title: 'Cleaning Services - 3 Branches', amount: 75000, validUntil: '2026-06-15', 	status: 'Draft' },
+    	{ id: 'Q-2026-004', date: '2026-05-16', client: 'City Centre Mall', title: 'Security Services Upgrade', amount: 95000, validUntil: '2026-06-16', 	status: 'Sent' },
+    	{ id: 'Q-2026-005', date: '2026-05-17', client: 'Oman Air', title: 'Terminal Cleaning Contract', amount: 180000, validUntil: '2026-06-17', status: 	'Converted to Contract' }
+	];
+
+	function loadQuotations() {
+    		const tbody = document.getElementById('quotationsList');
+    		if(!tbody) return;
+    
+    const vatRate = 0.05;
+    let totalValue = 0;
+    let pendingCount = 0;
+    let approvedCount = 0;
+    
+    tbody.innerHTML = quotations.map(q => {
+        const vat = q.amount * vatRate;
+        const total = q.amount + vat;
+        totalValue += q.amount;
+        if(q.status === 'Sent' || q.status === 'Draft') pendingCount++;
+        if(q.status === 'Approved') approvedCount++;
+        
+        let statusClass = 'badge-pending';
+        if(q.status === 'Approved') statusClass = 'badge-active';
+        if(q.status === 'Converted to Contract') statusClass = 'badge-active';
+        if(q.status === 'Rejected') statusClass = 'badge-danger';
+        
+        return `<tr>
+            <td><strong>${q.id}</strong></td><td>${q.date}</td><td>${q.client}</td>
+            <td>${q.title}</td><td>${q.amount.toLocaleString()}</td>
+            <td>${vat.toLocaleString()}</td><td><strong>${total.toLocaleString()}</strong></td>
+            <td>${q.validUntil}</td>
+            <td><span class="badge ${statusClass}">${q.status}</span></td>
+            <td>
+                ${q.status === 'Sent' ? `<button onclick="markAsApproved('${q.id}')" style="background:#28a745; padding:5px 8px; margin-right:5px;">✓ Approve</button>` : ''}
+                ${q.status === 'Draft' ? `<button onclick="sendQuotation('${q.id}')" style="background:#17a2b8; padding:5px 8px; margin-right:5px;">✉️ Send</button>` : ''}
+                <button onclick="deleteQuotation('${q.id}')" style="background:#dc3545; padding:5px 8px;">🗑️</button>
+                <button onclick="downloadQuotationPDF('${q.id}')" style="background:#6c757d; padding:5px 8px;">📄 PDF</button>
+              </td>
+        </tr>`;
+    }).join('');
+    
+    document.getElementById('totalQuotations').textContent = quotations.length;
+    document.getElementById('pendingQuotations').textContent = pendingCount;
+    document.getElementById('approvedQuotations').textContent = approvedCount;
+    document.getElementById('quotationValue').textContent = totalValue.toLocaleString();
+    
+    // Populate convert dropdown
+    const convertSelect = document.getElementById('convertQuotation');
+    if(convertSelect) {
+        const sentQuotations = quotations.filter(q => q.status === 'Sent' || q.status === 'Approved');
+        convertSelect.innerHTML = sentQuotations.map(q => `<option value="${q.id}">${q.id} - ${q.client} (${q.amount} OMR)</option>`).join('');
+    }
+}
+
+function createQuotation() {
+    const client = document.getElementById('quotationClient').value;
+    const title = document.getElementById('quotationTitle').value;
+    const amount = parseFloat(document.getElementById('quotationAmount').value);
+    const date = document.getElementById('quotationDate').value || new Date().toISOString().split('T')[0];
+    const validUntil = document.getElementById('quotationValidUntil').value;
+    const status = document.getElementById('quotationStatus').value;
+    
+    if(!title || !amount) return alert('Enter title and amount');
+    
+    const newId = `Q-${new Date().getFullYear()}-${String(quotations.length + 1).padStart(3,'0')}`;
+    
+    quotations.push({
+        id: newId, date, client, title, amount, validUntil, status
+    });
+    
+    loadQuotations();
+    alert(`Quotation ${newId} created successfully!`);
+    
+    // Clear form
+    document.getElementById('quotationTitle').value = '';
+    document.getElementById('quotationAmount').value = '';
+}
+
+function sendQuotation(id) {
+    const quotation = quotations.find(q => q.id === id);
+    if(quotation) {
+        quotation.status = 'Sent';
+        loadQuotations();
+        alert(`Quotation ${id} sent to ${quotation.client} via email`);
+    }
+}
+
+function markAsApproved(id) {
+    const quotation = quotations.find(q => q.id === id);
+    if(quotation) {
+        quotation.status = 'Approved';
+        loadQuotations();
+        alert(`Quotation ${id} approved! You can now convert it to a contract.`);
+    }
+}
+
+function convertToContract() {
+    const quotationId = document.getElementById('convertQuotation').value;
+    const startDate = document.getElementById('contractStartDate').value;
+    const endDate = document.getElementById('contractEndDate').value;
+    
+    if(!quotationId) return alert('Select a quotation');
+    if(!startDate) return alert('Enter contract start date');
+    
+    const quotation = quotations.find(q => q.id === quotationId);
+    if(quotation) {
+        quotation.status = 'Converted to Contract';
+        
+        // Add to contracts array (from existing contracts list)
+        const newContract = {
+            client: quotation.client,
+            title: quotation.title,
+            value: quotation.amount,
+            start: startDate,
+            end: endDate || '2026-12-31',
+            daysLeft: 365,
+            status: 'Active'
+        };
+        
+        if(typeof contracts !== 'undefined') {
+            contracts.push(newContract);
+        }
+        
+        loadQuotations();
+        if(typeof loadContracts === 'function') loadContracts();
+        
+        alert(`✓ Quotation ${quotationId} converted to contract!\nContract created with ${quotation.client}`);
+    }
+}
+
+function deleteQuotation(id) {
+    if(confirm(`Delete quotation ${id}?`)) {
+        quotations = quotations.filter(q => q.id !== id);
+        loadQuotations();
+    }
+}
+
+function downloadQuotationPDF(id) {
+    const quotation = quotations.find(q => q.id === id);
+    if(quotation) {
+        const vat = quotation.amount * 0.05;
+        alert(`📄 PDF generated: Quotation_${id}.pdf\n\nNIYAZ INTERNATIONAL LLC\nQuotation: ${quotation.title}\nClient: ${quotation.client}\nAmount: ${quotation.amount} OMR\nVAT (5%): ${vat} OMR\nTotal: ${quotation.amount + vat} OMR\nValid until: ${quotation.validUntil}\n\n(This is a sample PDF. Full PDF generation will be available in the final system.)`);
+    }
+}
+ 
+       function showTab(tab) {
+    document.getElementById('clientsTab').style.display = tab === 'clients' ? 'block' : 'none';
+    document.getElementById('leadsTab').style.display = tab === 'leads' ? 'block' : 'none';
+    document.getElementById('quotationsTab').style.display = tab === 'quotations' ? 'block' : 'none';
+    document.getElementById('contractsTab').style.display = tab === 'contracts' ? 'block' : 'none';
+    document.getElementById('activitiesTab').style.display = tab === 'activities' ? 'block' : 'none';
+    
+    const btns = ['tabClientsBtn','tabLeadsBtn','tabQuotationsBtn','tabContractsBtn','tabActivitiesBtn'];
+    btns.forEach(btn => { const el = document.getElementById(btn); if(el) el.style.background = '#1a4d8c'; });
+    if(tab === 'clients') document.getElementById('tabClientsBtn').style.background = '#0e3a6b';
+    if(tab === 'leads') document.getElementById('tabLeadsBtn').style.background = '#0e3a6b';
+    if(tab === 'quotations') document.getElementById('tabQuotationsBtn').style.background = '#0e3a6b';
+    if(tab === 'contracts') document.getElementById('tabContractsBtn').style.background = '#0e3a6b';
+    if(tab === 'activities') document.getElementById('tabActivitiesBtn').style.background = '#0e3a6b';
+    
+    if(tab === 'quotations') loadQuotations();
+}
+
+       loadCompanies();
+	loadClients();
+	loadLeads();
+	loadQuotations();
+	loadContracts();
+	loadActivities();
+    </script>
+</body>
+</html>

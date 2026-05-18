@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Niyaz Group ERP</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="niyaz_logo.png" alt="Niyaz">
+                <span>Niyaz Group ERP</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="active">📊 Dashboard</a>
+                <a href="company.html">🏢 Company Setup</a>
+		<a href="users.html">👤 User Management</a>
+                <a href="hr.html">👥 HR Management</a>
+                <a href="accounting.html">💰 Accounting & VAT</a>
+                <a href="projects.html">📋 Project Management</a>
+                <a href="crm.html">🤝 CRM</a>
+                <a href="alerts.html">🔔 Alerts</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <div class="company-selector">
+                    <label>🏢 Select Company:</label>
+                    <select id="companySelect"></select>
+                </div>
+                <div class="user-info">
+                    <span>👋 Welcome, Admin</span>
+                </div>
+            </header>
+
+            <div id="dashboardContent">
+                <h1>Dashboard</h1>
+                
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <h3 id="totalWorkers">0</h3>
+                        <p>Total Workers</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="totalProjects">0</h3>
+                        <p>Active Projects</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="totalClients">0</h3>
+                        <p>Total Clients</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="totalRevenue">0</h3>
+                        <p>Revenue (OMR)</p>
+                    </div>
+                    <div class="stat-card vat">
+                        <h3 id="vatDue">0</h3>
+                        <p>VAT Due (5%)</p>
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <h3>📌 Recent Alerts</h3>
+                    <div id="alertsList"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let companies = [];
+        
+        async function loadCompanies() {
+            const res = await fetch('/api/companies');
+            companies = await res.json();
+            const select = document.getElementById('companySelect');
+            select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            select.onchange = () => loadStats(select.value);
+            loadStats(select.value);
+            loadAlerts();
+        }
+        
+        async function loadStats(companyId) {
+            const res = await fetch(`/api/stats/${companyId}`);
+            const stats = await res.json();
+            document.getElementById('totalWorkers').textContent = stats.workers;
+            document.getElementById('totalProjects').textContent = stats.projects;
+            document.getElementById('totalClients').textContent = stats.clients;
+            document.getElementById('totalRevenue').textContent = stats.revenue.toLocaleString();
+            document.getElementById('vatDue').textContent = stats.vatDue.toLocaleString();
+        }
+        
+        async function loadAlerts() {
+            const res = await fetch('/api/alerts');
+            const alerts = await res.json();
+            const container = document.getElementById('alertsList');
+            container.innerHTML = alerts.map(a => `
+                <div class="alert alert-${a.type}">
+                    <strong>${a.message}</strong>
+                    <small>Due: ${a.date}</small>
+                </div>
+            `).join('');
+        }
+        
+        loadCompanies();
+    </script>
+</body>
+</html>

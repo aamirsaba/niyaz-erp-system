@@ -1,0 +1,280 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    background: #f0f2f5;
+}
+
+.app {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 260px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.logo {
+    padding: 24px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.logo img {
+    height: 35px;
+}
+
+.logo span {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.sidebar-nav {
+    padding: 20px 0;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    transition: all 0.3s;
+    font-size: 0.95rem;
+}
+
+.sidebar-nav a:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.sidebar-nav a.active {
+    background: #1a4d8c;
+    color: white;
+    border-left: 3px solid #ffc107;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    margin-left: 260px;
+    padding: 20px;
+}
+
+header {
+    background: white;
+    padding: 15px 25px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.company-selector select {
+    padding: 8px 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 0.9rem;
+    margin-left: 10px;
+    background: white;
+}
+
+.user-info {
+    font-weight: 500;
+    color: #1a1a2e;
+}
+
+h1 {
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+    color: #1a1a2e;
+}
+
+h2 {
+    font-size: 1.3rem;
+    margin: 25px 0 15px 0;
+    color: #1a1a2e;
+}
+
+h3 {
+    font-size: 1rem;
+    margin-bottom: 15px;
+    color: #1a1a2e;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    color: #1a4d8c;
+    margin-bottom: 8px;
+}
+
+.stat-card.vat h3 {
+    color: #e67e22;
+}
+
+.stat-card p {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+/* Tables */
+.table-container {
+    background: white;
+    border-radius: 12px;
+    overflow-x: auto;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+/* Forms */
+.form-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+button {
+    background: #1a4d8c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+button:hover {
+    background: #0e3a6b;
+}
+
+/* Alerts */
+.alert {
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+}
+
+.alert-info {
+    background: #d1ecf1;
+    border-left: 4px solid #17a2b8;
+}
+
+.alert-success {
+    background: #d4edda;
+    border-left: 4px solid #28a745;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    border-left: 4px solid #dc3545;
+}
+
+/* Badges */
+.badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.badge-active {
+    background: #d4edda;
+    color: #28a745;
+}
+
+.badge-pending {
+    background: #fff3cd;
+    color: #ffc107;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 70px;
+    }
+    .sidebar span, .sidebar-nav a span {
+        display: none;
+    }
+    .main-content {
+        margin-left: 70px;
+    }
+    .logo span {
+        display: none;
+    }
+}

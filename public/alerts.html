@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerts - Niyaz ERP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="niyaz_logo.png" alt="Niyaz">
+                <span>Niyaz Group ERP</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html">📊 Dashboard</a>
+                <a href="company.html">🏢 Company Setup</a>
+		<a href="users.html">👤 User Management</a>
+                <a href="hr.html">👥 HR Management</a>
+                <a href="accounting.html">💰 Accounting & VAT</a>
+                <a href="projects.html">📋 Project Management</a>
+                <a href="crm.html">🤝 CRM</a>
+                <a href="alerts.html" class="active">🔔 Alerts</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <div class="company-selector">
+                    <label>🏢 Select Company:</label>
+                    <select id="companySelect"></select>
+                </div>
+                <div class="user-info">👋 Welcome, Admin</div>
+            </header>
+
+            <h1>🔔 Alerts & Notifications</h1>
+
+            <!-- Alert Stats -->
+            <div class="stats-grid">
+                <div class="stat-card"><h3 id="unreadCount">8</h3><p>Unread Alerts</p></div>
+                <div class="stat-card"><h3 id="highPriority">3</h3><p>High Priority</p></div>
+                <div class="stat-card"><h3 id="expiringToday">2</h3><p>Expiring Today</p></div>
+                <div class="stat-card vat"><h3 id="overdueTasks">1</h3><p>Overdue Tasks</p></div>
+            </div>
+
+            <!-- Alert Filters -->
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button onclick="filterAlerts('all')" id="filterAll" style="background:#1a4d8c;">📋 All</button>
+                <button onclick="filterAlerts('warning')" id="filterWarning">⚠️ Warnings</button>
+                <button onclick="filterAlerts('danger')" id="filterDanger">🔴 Critical</button>
+                <button onclick="filterAlerts('info')" id="filterInfo">ℹ️ Info</button>
+                <button onclick="filterAlerts('success')" id="filterSuccess">✅ Success</button>
+                <button onclick="markAllRead()" style="background:#28a745;">✓ Mark All Read</button>
+            </div>
+
+            <!-- Alerts List -->
+            <div id="alertsContainer"></div>
+
+            <!-- Notification Settings -->
+            <div class="form-card" style="margin-top: 30px;">
+                <h3>⚙️ Notification Settings</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 15px;">
+                    <label><input type="checkbox" id="emailNotif" checked> 📧 Email Notifications</label>
+                    <label><input type="checkbox" id="smsNotif"> 📱 SMS Alerts</label>
+                    <label><input type="checkbox" id="browserNotif" checked> 🔔 Browser Notifications</label>
+                    <label><input type="checkbox" id="dailyDigest"> 📊 Daily Digest Email</label>
+                </div>
+                <button onclick="saveSettings()" style="margin-top:15px;">Save Settings</button>
+            </div>
+
+            <!-- Alert Rules -->
+            <div class="form-card">
+                <h3>➕ Create Custom Alert Rule</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
+                    <select id="ruleModule">
+                        <option>HR - Absent 3 days</option><option>Project - Task Overdue</option><option>Contract - Expiring Soon</option><option>VAT - Filing Reminder</option>
+                    </select>
+                    <select id="rulePriority">
+                        <option>High</option><option>Medium</option><option>Low</option>
+                    </select>
+                    <button onclick="createRule()">Create Rule</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let alerts = [
+            { id: 1, type: 'danger', title: 'Worker Absent', message: 'Ahmed Al Balushi has been absent for 3 consecutive days', date: '2026-05-18', read: false },
+            { id: 2, type: 'warning', title: 'Contract Expiring', message: 'Al Mouj Group contract renews in 5 days', date: '2026-05-23', read: false },
+            { id: 3, type: 'warning', title: 'VAT Deadline', message: 'VAT return filing due on June 10, 2026', date: '2026-06-10', read: false },
+            { id: 4, type: 'info', title: 'Project Update', message: 'Al Mouj Tower FM project is 45% complete', date: '2026-05-18', read: false },
+            { id: 5, type: 'success', title: 'Payment Received', message: 'Oman Air payment of 18,500 OMR received', date: '2026-05-17', read: true },
+            { id: 6, type: 'danger', title: 'Task Overdue', message: 'Equipment Installation task is overdue by 2 days', date: '2026-05-16', read: false },
+            { id: 7, type: 'warning', title: 'Employee Leave', message: '3 employees requested leave next week', date: '2026-05-20', read: false },
+            { id: 8, type: 'info', title: 'New Lead', message: 'New lead from Oman Oil - potential value 250,000 OMR', date: '2026-05-17', read: false }
+        ];
+
+        let currentFilter = 'all';
+
+        function loadCompanies() {
+            const companies = ['Niyaz International LLC', 'Niyaz Facilities Management', 'Niyaz Technical Services'];
+            const select = document.getElementById('companySelect');
+            if(select) select.innerHTML = companies.map(c => `<option>${c}</option>`).join('');
+        }
+
+        function loadAlerts() {
+            let filtered = alerts;
+            if(currentFilter !== 'all') {
+                filtered = alerts.filter(a => a.type === currentFilter);
+            }
+            
+            const container = document.getElementById('alertsContainer');
+            container.innerHTML = filtered.map(a => `
+                <div class="alert alert-${a.type}" style="display: flex; justify-content: space-between; align-items: center; ${!a.read ? 'font-weight: bold;' : ''}">
+                    <div>
+                        <strong>${a.title}</strong><br>
+                        <small>${a.message}</small><br>
+                        <small style="color: #6c757d;">📅 ${a.date}</small>
+                    </div>
+                    <div>
+                        ${!a.read ? `<button onclick="markRead(${a.id})" style="background:#28a745; padding:5px 10px; margin-right:5px;">✓ Mark Read</button>` : '<span class="badge badge-active">Read</span>'}
+                        <button onclick="deleteAlert(${a.id})" style="background:#dc3545; padding:5px 10px;">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('unreadCount').textContent = alerts.filter(a => !a.read).length;
+            document.getElementById('highPriority').textContent = alerts.filter(a => a.type === 'danger' || a.type === 'warning').length;
+            document.getElementById('expiringToday').textContent = '2';
+            document.getElementById('overdueTasks').textContent = '1';
+        }
+
+        function markRead(id) {
+            const alert = alerts.find(a => a.id === id);
+            if(alert) alert.read = true;
+            loadAlerts();
+        }
+
+        function deleteAlert(id) {
+            alerts = alerts.filter(a => a.id !== id);
+            loadAlerts();
+        }
+
+        function markAllRead() {
+            alerts.forEach(a => a.read = true);
+            loadAlerts();
+            alert('All alerts marked as read!');
+        }
+
+        function filterAlerts(type) {
+            currentFilter = type;
+            
+            const btns = ['filterAll','filterWarning','filterDanger','filterInfo','filterSuccess'];
+            btns.forEach(btn => { const el = document.getElementById(btn); if(el) el.style.background = '#1a4d8c'; });
+            
+            if(type === 'all') document.getElementById('filterAll').style.background = '#0e3a6b';
+            if(type === 'warning') document.getElementById('filterWarning').style.background = '#0e3a6b';
+            if(type === 'danger') document.getElementById('filterDanger').style.background = '#0e3a6b';
+            if(type === 'info') document.getElementById('filterInfo').style.background = '#0e3a6b';
+            if(type === 'success') document.getElementById('filterSuccess').style.background = '#0e3a6b';
+            
+            loadAlerts();
+        }
+
+        function saveSettings() {
+            const settings = {
+                email: document.getElementById('emailNotif').checked,
+                sms: document.getElementById('smsNotif').checked,
+                browser: document.getElementById('browserNotif').checked,
+                digest: document.getElementById('dailyDigest').checked
+            };
+            localStorage.setItem('alertSettings', JSON.stringify(settings));
+            alert('Settings saved!');
+        }
+
+        function createRule() {
+            const module = document.getElementById('ruleModule').value;
+            const priority = document.getElementById('rulePriority').value;
+            alert(`Alert rule created!\nModule: ${module}\nPriority: ${priority}\nYou will receive notifications when conditions are met.`);
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('alertSettings');
+            if(saved) {
+                const settings = JSON.parse(saved);
+                document.getElementById('emailNotif').checked = settings.email;
+                document.getElementById('smsNotif').checked = settings.sms;
+                document.getElementById('browserNotif').checked = settings.browser;
+                document.getElementById('dailyDigest').checked = settings.digest;
+            }
+        }
+
+        loadCompanies();
+        loadAlerts();
+        loadSettings();
+    </script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Management - Niyaz ERP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="niyaz_logo.png" alt="Niyaz">
+                <span>Niyaz Group ERP</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html">📊 Dashboard</a>
+                <a href="company.html">🏢 Company Setup</a>
+		<a href="users.html">👤 User Management</a>
+                <a href="hr.html">👥 HR Management</a>
+                <a href="accounting.html">💰 Accounting & VAT</a>
+                <a href="projects.html" class="active">📋 Project Management</a>
+                <a href="crm.html">🤝 CRM</a>
+                <a href="alerts.html">🔔 Alerts</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <div class="company-selector">
+                    <label>🏢 Select Company:</label>
+                    <select id="companySelect"></select>
+                </div>
+                <div class="user-info">👋 Welcome, Admin</div>
+            </header>
+
+            <h1>📋 Project Management</h1>
+
+            <!-- Project Stats -->
+            <div class="stats-grid">
+                <div class="stat-card"><h3 id="totalProjects">12</h3><p>Total Projects</p></div>
+                <div class="stat-card"><h3 id="activeProjects">8</h3><p>Active Projects</p></div>
+                <div class="stat-card"><h3 id="completedProjects">4</h3><p>Completed</p></div>
+                <div class="stat-card vat"><h3 id="totalBudget">245,000</h3><p>Total Budget (OMR)</p></div>
+            </div>
+
+            <!-- Tabs -->
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button onclick="showTab('projects')" id="tabProjectsBtn" style="background:#1a4d8c;">📁 All Projects</button>
+                <button onclick="showTab('tasks')" id="tabTasksBtn">✅ Tasks</button>
+                <button onclick="showTab('gantt')" id="tabGanttBtn">📅 Gantt Chart</button>
+                <button onclick="showTab('timesheet')" id="tabTimesheetBtn">⏱️ Timesheets</button>
+            </div>
+
+            <!-- Projects Tab -->
+            <div id="projectsTab">
+                <div class="form-card">
+                    <h3>➕ Create New Project</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
+                        <input type="text" id="projectName" placeholder="Project Name">
+                        <select id="projectClient">
+                            <option>Al Mouj Group</option><option>Oman Air</option><option>City Centre Mall</option>
+                        </select>
+                        <input type="number" id="projectBudget" placeholder="Budget (OMR)">
+                        <input type="date" id="projectStart">
+                        <input type="date" id="projectEnd">
+                        <button onclick="createProject()">Create Project</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="projectsTable">
+                        <thead><tr><th>Project Name</th><th>Client</th><th>Start Date</th><th>End Date</th><th>Budget</th><th>Progress</th><th>Status</th></tr</thead>
+                        <tbody id="projectsList"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tasks Tab -->
+            <div id="tasksTab" style="display:none;">
+                <div class="form-card">
+                    <h3>➕ Add Task</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
+                        <select id="taskProject"></select>
+                        <input type="text" id="taskName" placeholder="Task Name">
+                        <select id="taskAssignee"></select>
+                        <input type="date" id="taskDue">
+                        <select id="taskPriority">
+                            <option>High</option><option>Medium</option><option>Low</option>
+                        </select>
+                        <button onclick="addTask()">Add Task</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="tasksTable">
+                        <thead><tr><th>Project</th><th>Task</th><th>Assigned To</th><th>Due Date</th><th>Priority</th><th>Status</th></tr</thead>
+                        <tbody id="tasksList"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Gantt Chart Tab -->
+            <div id="ganttTab" style="display:none;">
+                <div class="form-card">
+                    <h3>📊 Project Timeline (Gantt View)</h3>
+                    <div id="ganttChart" style="overflow-x: auto;">
+                        <div style="min-width: 800px;">
+                            <div style="background:#f0f2f5; padding:10px; margin-bottom:5px; font-weight:bold;">Al Mouj Tower FM Project</div>
+                            <div style="background:#1a4d8c; width:65%; color:white; padding:8px; margin:2px 0; border-radius:8px;">Phase 1: Planning (May 1-15)</div>
+                            <div style="background:#28a745; width:85%; color:white; padding:8px; margin:2px 0; border-radius:8px;">Phase 2: Execution (May 16 - June 15)</div>
+                            <div style="background:#ffc107; width:40%; color:white; padding:8px; margin:2px 0; border-radius:8px;">Phase 3: Testing (June 16-30)</div>
+                            <div style="background:#17a2b8; width:20%; color:white; padding:8px; margin:2px 0; border-radius:8px;">Phase 4: Handover (July 1-7)</div>
+                            <hr style="margin:20px 0">
+                            <div style="background:#f0f2f5; padding:10px; margin-bottom:5px; font-weight:bold;">City Centre Cleaning Contract</div>
+                            <div style="background:#1a4d8c; width:100%; color:white; padding:8px; margin:2px 0; border-radius:8px;">Daily Cleaning Operations (Ongoing)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timesheet Tab -->
+            <div id="timesheetTab" style="display:none;">
+                <div class="form-card">
+                    <h3>⏱️ Log Hours</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
+                        <select id="timesheetProject"></select>
+                        <select id="timesheetWorker"></select>
+                        <input type="number" id="hoursWorked" placeholder="Hours">
+                        <input type="date" id="timesheetDate">
+                        <button onclick="logHours()">Log Hours</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="timesheetTable">
+                        <thead><tr><th>Date</th><th>Project</th><th>Worker</th><th>Hours</th><th>Rate (OMR)</th><th>Cost</th></tr</thead>
+                        <tbody id="timesheetList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let projects = [
+            { id: 1, name: 'Al Mouj Tower FM', client: 'Al Mouj Group', start: '2026-05-01', end: '2026-07-07', budget: 125000, progress: 45, status: 'Active' },
+            { id: 2, name: 'City Centre Cleaning', client: 'Majid Al Futtaim', start: '2026-01-01', end: '2026-12-31', budget: 95000, progress: 70, status: 'Active' },
+            { id: 3, name: 'Oman Air HVAC Upgrade', client: 'Oman Air', start: '2026-04-01', end: '2026-06-30', budget: 78000, progress: 30, status: 'Active' },
+            { id: 4, name: 'Airport Security Setup', client: 'Oman Airports', start: '2026-02-01', end: '2026-05-15', budget: 45000, progress: 100, status: 'Completed' }
+        ];
+        
+        let tasks = [
+            { project: 'Al Mouj Tower FM', task: 'Site Survey', assignee: 'Ahmed', due: '2026-05-10', priority: 'High', status: 'Completed' },
+            { project: 'Al Mouj Tower FM', task: 'Equipment Installation', assignee: 'Mohammed', due: '2026-06-05', priority: 'High', status: 'In Progress' },
+            { project: 'City Centre Cleaning', task: 'Daily Cleaning Schedule', assignee: 'Salim', due: '2026-05-20', priority: 'Medium', status: 'Pending' }
+        ];
+        
+        let timesheets = [
+            { date: '2026-05-17', project: 'Al Mouj Tower FM', worker: 'Ahmed', hours: 8, rate: 12, cost: 96 },
+            { date: '2026-05-17', project: 'Al Mouj Tower FM', worker: 'Mohammed', hours: 7, rate: 10, cost: 70 }
+        ];
+
+        function loadCompanies() {
+            const companies = ['Niyaz International LLC', 'Niyaz Facilities Management', 'Niyaz Technical Services'];
+            const select = document.getElementById('companySelect');
+            if(select) select.innerHTML = companies.map(c => `<option>${c}</option>`).join('');
+        }
+
+        function loadProjects() {
+            const tbody = document.getElementById('projectsList');
+            if(!tbody) return;
+            tbody.innerHTML = projects.map(p => `
+                <tr>
+                    <td><strong>${p.name}</strong></td>
+                    <td>${p.client}</td>
+                    <td>${p.start}</td>
+                    <td>${p.end}</td>
+                    <td>${p.budget.toLocaleString()}</td>
+                    <td><div style="background:#e0e0e0; border-radius:10px;"><div style="background:#1a4d8c; width:${p.progress}%; padding:3px; border-radius:10px; text-align:center; color:white; font-size:0.7rem;">${p.progress}%</div></div></td>
+                    <td><span class="badge ${p.status === 'Active' ? 'badge-active' : 'badge-active'}">${p.status}</span></td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('totalProjects').textContent = projects.length;
+            document.getElementById('activeProjects').textContent = projects.filter(p => p.status === 'Active').length;
+            document.getElementById('completedProjects').textContent = projects.filter(p => p.status === 'Completed').length;
+            document.getElementById('totalBudget').textContent = projects.reduce((s,p) => s + p.budget, 0);
+        }
+
+        function loadTasks() {
+            const tbody = document.getElementById('tasksList');
+            if(tbody) tbody.innerHTML = tasks.map(t => `
+                <tr><td>${t.project}</td><td>${t.task}</td><td>${t.assignee}</td><td>${t.due}</td><td><span class="badge badge-pending">${t.priority}</span></td><td><span class="badge badge-active">${t.status}</span></td></tr>
+            `).join('');
+            
+            const projectSelect = document.getElementById('taskProject');
+            if(projectSelect) projectSelect.innerHTML = projects.map(p => `<option>${p.name}</option>`).join('');
+        }
+
+        function loadTimesheets() {
+            const tbody = document.getElementById('timesheetList');
+            if(tbody) tbody.innerHTML = timesheets.map(t => `
+                <tr><td>${t.date}</td><td>${t.project}</td><td>${t.worker}</td><td>${t.hours}</td><td>${t.rate}</td><td>${t.cost}</td></tr>
+            `).join('');
+        }
+
+        function createProject() {
+            const name = document.getElementById('projectName').value;
+            const client = document.getElementById('projectClient').value;
+            const budget = document.getElementById('projectBudget').value;
+            const start = document.getElementById('projectStart').value;
+            const end = document.getElementById('projectEnd').value;
+            if(!name) return alert('Enter project name');
+            projects.push({ id: projects.length+1, name, client, start, end, budget: parseInt(budget), progress: 0, status: 'Active' });
+            loadProjects();
+            alert('Project created!');
+        }
+
+        function addTask() {
+            const project = document.getElementById('taskProject').value;
+            const task = document.getElementById('taskName').value;
+            const assignee = document.getElementById('taskAssignee').value;
+            const due = document.getElementById('taskDue').value;
+            const priority = document.getElementById('taskPriority').value;
+            if(!task) return alert('Enter task name');
+            tasks.push({ project, task, assignee, due, priority, status: 'Pending' });
+            loadTasks();
+            alert('Task added!');
+        }
+
+        function logHours() {
+            const project = document.getElementById('timesheetProject').value;
+            const worker = document.getElementById('timesheetWorker').value;
+            const hours = document.getElementById('hoursWorked').value;
+            const date = document.getElementById('timesheetDate').value;
+            if(!hours) return alert('Enter hours');
+            timesheets.push({ date, project, worker, hours: parseInt(hours), rate: 10, cost: hours * 10 });
+            loadTimesheets();
+            alert('Hours logged!');
+        }
+
+        function showTab(tab) {
+            document.getElementById('projectsTab').style.display = tab === 'projects' ? 'block' : 'none';
+            document.getElementById('tasksTab').style.display = tab === 'tasks' ? 'block' : 'none';
+            document.getElementById('ganttTab').style.display = tab === 'gantt' ? 'block' : 'none';
+            document.getElementById('timesheetTab').style.display = tab === 'timesheet' ? 'block' : 'none';
+            
+            const btns = ['tabProjectsBtn','tabTasksBtn','tabGanttBtn','tabTimesheetBtn'];
+            btns.forEach(btn => { const el = document.getElementById(btn); if(el) el.style.background = '#1a4d8c'; });
+            if(tab === 'projects') document.getElementById('tabProjectsBtn').style.background = '#0e3a6b';
+            if(tab === 'tasks') document.getElementById('tabTasksBtn').style.background = '#0e3a6b';
+            if(tab === 'gantt') document.getElementById('tabGanttBtn').style.background = '#0e3a6b';
+            if(tab === 'timesheet') document.getElementById('tabTimesheetBtn').style.background = '#0e3a6b';
+        }
+
+        loadCompanies();
+        loadProjects();
+        loadTasks();
+        loadTimesheets();
+    </script>
+</body>
+</html>
