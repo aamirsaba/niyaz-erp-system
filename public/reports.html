@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Niyaz ERP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="niyaz_logo.png" alt="Niyaz">
+                <span>Niyaz Group ERP</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html">📊 Dashboard</a>
+                <a href="company.html">🏢 Company Setup</a>
+                <a href="users.html">👤 User Management</a>
+                <a href="hr.html">👥 HR & Payroll</a>
+                <a href="accounting.html">💰 Accounting & VAT</a>
+                <a href="projects.html">📋 Project Management</a>
+                <a href="crm.html">🤝 CRM</a>
+                <a href="reports.html" class="active">📈 Reports</a>
+                <a href="alerts.html">🔔 Alerts</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <div class="company-selector">
+                    <label>🏢 Select Company:</label>
+                    <select id="companySelect"></select>
+                </div>
+                <div class="user-info">👋 Welcome, Admin</div>
+            </header>
+
+            <h1>📈 Reports & Analytics</h1>
+
+            <!-- Report Categories -->
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; overflow-x: auto;">
+   		<button onclick="showReport('attendance')" id="tabAttendanceBtn" style="background:#1a4d8c;">📅 Attendance Reports</button>
+                <button onclick="showReport('payroll')" id="tabPayrollBtn">💰 Payroll Reports</button>
+                <button onclick="showReport('financial')" id="tabFinancialBtn">📊 Financial Reports</button>
+                <button onclick="showReport('project')" id="tabProjectBtn">📋 Project Reports</button>
+                <button onclick="showReport('hr')" id="tabHrBtn">👥 HR Reports</button>
+                <button onclick="showReport('client')" id="tabClientBtn">🏢 Client Reports</button>
+                <button onclick="showReport('labour')" id="tabLabourBtn">👷 Labour Summary</button>
+            </div>
+
+            <!-- ==================== ATTENDANCE REPORTS ==================== -->
+            <div id="attendanceReport">
+                <div class="form-card">
+                    <h3>📅 Attendance Report Filters</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 10px;">
+                        <select id="attendanceMonth">
+                            <option value="05">May 2026</option><option value="04">April 2026</option><option value="03">March 2026</option>
+                        </select>
+                        <select id="attendanceSite">
+                            <option value="all">All Sites</option>
+                            <option>Al Mouj Tower</option><option>City Centre Mall</option><option>Oman Air Headquarters</option>
+                        </select>
+                        <button onclick="generateAttendanceReport()">📊 Generate Report</button>
+                        <button onclick="exportReport('attendance')">📥 Export PDF</button>
+                        <button onclick="exportToExcel('attendance')">📊 Export Excel</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card"><h3 id="totalWorkersCount">0</h3><p>Total Workers</p></div>
+                    <div class="stat-card"><h3 id="presentCount">0</h3><p>Present</p></div>
+                    <div class="stat-card"><h3 id="absentCount">0</h3><p>Absent</p></div>
+                    <div class="stat-card vat"><h3 id="attendanceRate">0%</h3><p>Attendance Rate</p></div>
+                </div>
+
+                <div class="table-container">
+                    <h3>📋 Daily Attendance Summary</h3>
+                    <table id="attendanceReportTable">
+                        <thead><tr><th>Date</th><th>Total Workers</th><th>Present</th><th>Absent</th><th>Late</th><th>Attendance %</th></tr></thead>
+                        <tbody id="attendanceReportBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="table-container">
+                    <h3>👥 Worker-wise Attendance</h3>
+                    <table id="workerAttendanceTable">
+                        <thead><tr><th>Worker Name</th><th>Site</th><th>Present Days</th><th>Absent Days</th><th>Late Days</th><th>Attendance %</th></tr></thead>
+                        <tbody id="workerAttendanceBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ==================== PAYROLL REPORTS ==================== -->
+            <div id="payrollReport" style="display:none;">
+                <div class="form-card">
+                    <h3>💰 Payroll Report Filters</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 10px;">
+                        <select id="payrollReportMonth">
+                            <option>May 2026</option><option>April 2026</option><option>March 2026</option>
+                        </select>
+                        <select id="payrollReportSite">
+                            <option value="all">All Sites</option>
+                            <option>Al Mouj Tower</option><option>City Centre Mall</option><option>Oman Air Headquarters</option>
+                        </select>
+                        <button onclick="generatePayrollReport()">📊 Generate Report</button>
+                        <button onclick="exportReport('payroll')">📥 Export PDF</button>
+                        <button onclick="exportToExcel('payroll')">📊 Export Excel</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card"><h3 id="totalSalary">0</h3><p>Total Salary (OMR)</p></div>
+                    <div class="stat-card"><h3 id="totalDeductionsReport">0</h3><p>Total Deductions</p></div>
+                    <div class="stat-card vat"><h3 id="netPayable">0</h3><p>Net Payable</p></div>
+                    <div class="stat-card"><h3 id="avgSalary">0</h3><p>Average Salary</p></div>
+                </div>
+
+                <div class="table-container">
+                    <h3>📋 Monthly Payroll Register</h3>
+                    <table id="payrollReportTable">
+                        <thead><tr><th>Employee</th><th>Basic</th><th>Allowances</th><th>Gross</th><th>Deductions</th><th>Net Pay</th><th>Bank Account</th></tr></thead>
+                        <tbody id="payrollReportBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ==================== FINANCIAL REPORTS ==================== -->
+            <div id="financialReport" style="display:none;">
+                <div class="form-card">
+                    <h3>📊 Financial Report Filters</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 10px;">
+                        <select id="financialYear">
+                            <option>2026</option><option>2025</option><option>2024</option>
+                        </select>
+                        <select id="financialPeriod">
+                            <option>Q1 (Jan-Mar)</option><option>Q2 (Apr-Jun)</option><option>Q3 (Jul-Sep)</option><option>Q4 (Oct-Dec)</option><option>Full Year</option>
+                        </select>
+                        <button onclick="generateFinancialReport()">📊 Generate Report</button>
+                        <button onclick="exportReport('financial')">📥 Export PDF</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card"><h3 id="totalRevenueFin">0</h3><p>Total Revenue</p></div>
+                    <div class="stat-card"><h3 id="totalExpensesFin">0</h3><p>Total Expenses</p></div>
+                    <div class="stat-card vat"><h3 id="netProfitFin">0</h3><p>Net Profit</p></div>
+                    <div class="stat-card"><h3 id="vatTotal">0</h3><p>VAT Collected</p></div>
+                </div>
+
+                <div class="table-container">
+                    <h3>📋 Profit & Loss Statement</h3>
+                    <table id="plTable">
+                        <thead><tr><th>Account</th><th>Amount (OMR)</th><th>% of Revenue</th></tr></thead>
+                        <tbody id="plBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="table-container">
+                    <h3>📋 Monthly Revenue Trend</h3>
+                    <table id="revenueTrendTable">
+                        <thead><tr><th>Month</th><th>Revenue</th><th>Expenses</th><th>Profit</th><th>VAT</th></tr></thead>
+                        <tbody id="revenueTrendBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ==================== PROJECT REPORTS ==================== -->
+            <div id="projectReport" style="display:none;">
+                <div class="form-card">
+                    <h3>📋 Project Report Filters</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 10px;">
+                        <select id="projectStatus">
+                            <option value="all">All Projects</option><option>Active</option><option>Completed</option><option>On Hold</option>
+                        </select>
+                        <button onclick="generateProjectReport()">📊 Generate Report</button>
+                        <button onclick="exportReport('project')">📥 Export PDF</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card"><h3 id="totalProjectsCount">0</h3><p>Total Projects</p></div>
+                    <div class="stat-card"><h3 id="activeProjectsCount">0</h3><p>Active</p></div>
+                    <div class="stat-card"><h3 id="completedProjectsCount">0</h3><p>Completed</p></div>
+                    <div class="stat-card vat"><h3 id="totalBudgetSum">0</h3><p>Total Budget (OMR)</p></div>
+                </div>
+
+                <div class="table-container">
+                    <h3>📋 Project Summary</h3>
+                    <table id="projectReportTable">
+                        <thead><tr><th>Project Name</th><th>Client</th><th>Budget</th><th>Actual Cost</th><th>Progress</th><th>Status</th></tr></thead>
+                        <tbody id="projectReportBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ==================== HR REPORTS ==================== -->
+            <div id="hrReport" style="display:none;">
+                <div class="form-card">
+                    <h3>👥 HR Report Filters</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 10px;">
+                        <select id="departmentFilter">
+                            <option value="all">All Departments</option><option>HVAC</option><option>Cleaning</option><option>MEP</option><option>Security</option><option>General</option>
+                        </select>
+                        <button onclick="generateHrReport()">📊 Generate Report</button>
+                        <button onclick="exportReport('hr')">📥 Export PDF</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card"><h3 id="totalEmployeesHr">0</h3><p>Total Employees</p></div>
+                    <div class="stat-card"><h3 id="totalLeavesHr">0</h3><p>Leaves Taken</p></div>
+                    <div class="stat-card"><h3 id="totalLoanHr">0</h3><p>Outstanding Loans</p></div>
+                    <div class="stat-card vat"><h3 id="avgSalaryHr">0</h3><p>Avg Salary (OMR)</p></div>
+                </div>
+
+                <div class="table-container">
+                    <h3>📋 Employee Directory</h3>
+                    <table id="hrReportTable">
+                        <thead><tr><th>Name</th><th>Position</th><th>Department</th><th>Join Date</th><th>Basic Salary</th><th>Phone</th></tr></thead>
+                        <tbody id="hrReportBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="table-container">
+                    <h3>🌴 Leave Summary</h3>
+                    <table id="leaveSummaryTable">
+                        <thead><tr><th>Employee</th><th>Annual Leave Used</th><th>Sick Leave</th><th>Unpaid Leave</th><th>Remaining Balance</th></tr></thead>
+                        <tbody id="leaveSummaryBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ==================== CLIENT REPORTS ==================== -->
+            <div id="clientReport" style="display:none;">
+                <div class="form-card">
+                    <h3>🏢 Client Report Filters</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 10px;">
+                        <select id="clientType">
+                            <option value="all">All Clients</option><option>Active</option><option>Leads</option>
+                        </select>
+                        <button onclick="generateClientReport()">📊 Generate Report</button>
+                        <button onclick="exportReport('client')">📥 Export PDF</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card"><h3 id="totalClientsCount">0</h3><p>Total Clients</p></div>
+                    <div class="stat-card"><h3 id="activeContractsCount">0</h3><p>Active Contracts</p></div>
+                    <div class="stat-card"><h3 id="totalContractValueSum">0</h3><p>Contract Value (OMR)</p></div>
+                    <div class="stat-card vat"><h3 id="expiringContractsCount">0</h3><p>Expiring Soon</p></div>
+                </div>
+
+                <div class="table-container">
+                    <h3>📋 Client List</h3>
+                    <table id="clientReportTable">
+                        <thead><tr><th>Client</th><th>Contact</th><th>Phone</th><th>Active Contracts</th><th>Total Value</th><th>Status</th></tr></thead>
+                        <tbody id="clientReportBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ==================== LABOUR SUMMARY ==================== -->
+            <div id="labourReport" style="display:none;">
+                <div class="form-card">
+                    <h3>👷 Labour Summary Report</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 10px;">
+                        <select id="labourSite">
+                            <option value="all">All Sites</option>
+                            <option>Al Mouj Tower</option><option>City Centre Mall</option><option>Oman Air Headquarters</option>
+                        </select>
+                        <button onclick="generateLabourReport()">📊 Generate Report</button>
+                        <button onclick="exportReport('labour')">📥 Export PDF</button>
+                        <button onclick="exportToExcel('labour')">📊 Export Excel</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card"><h3 id="totalWorkersLabour">0</h3><p>Total Workers</p></div>
+                    <div class="stat-card"><h3 id="totalSitesLabour">0</h3><p>Total Sites</p></div>
+                    <div class="stat-card"><h3 id="avgAttendanceLabour">0</h3><p>Avg Attendance %</p></div>
+                    <div class="stat-card vat"><h3 id="monthlyCostLabour">0</h3><p>Monthly Labour Cost</p></div>
+                </div>
+
+                <div class="table-container">
+                    <h3>📋 Site-wise Labour Distribution</h3>
+                    <table id="labourDistributionTable">
+                        <thead><tr><th>Site Name</th><th>Total Workers</th><th>Supervisor</th><th>Attendance Rate</th><th>Monthly Cost</th></tr></thead>
+                        <tbody id="labourDistributionBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="table-container">
+                    <h3>👷 Skill-wise Worker Summary</h3>
+                    <table id="skillSummaryTable">
+                        <thead><tr><th>Skill Type</th><th>Number of Workers</th><th>Avg Salary</th><th>Total Monthly Cost</th></tr></thead>
+                        <tbody id="skillSummaryBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Demo data for reports
+        const workers = [
+            { id: 1, name: 'Ahmed Al Balushi', position: 'HVAC Supervisor', skill: 'HVAC', salary: 850, site: 'Al Mouj Tower', phone: '91234567', joinDate: '2022-01-15' },
+            { id: 2, name: 'Salim Al Hinai', position: 'Cleaning Manager', skill: 'Cleaning', salary: 750, site: 'City Centre Mall', phone: '92345678', joinDate: '2022-03-10' },
+            { id: 3, name: 'Mohammed Al Riyami', position: 'MEP Technician', skill: 'MEP', salary: 650, site: 'Al Mouj Tower', phone: '93456789', joinDate: '2023-01-20' },
+            { id: 4, name: 'Rashid Al Saadi', position: 'Security Guard', skill: 'Security', salary: 450, site: 'Oman Air Headquarters', phone: '94567890', joinDate: '2023-06-01' },
+            { id: 5, name: 'Khalid Al Shukaili', position: 'General Labour', skill: 'General', salary: 400, site: 'City Centre Mall', phone: '95678901', joinDate: '2024-01-10' }
+        ];
+
+        const sites = ['Al Mouj Tower', 'City Centre Mall', 'Oman Air Headquarters'];
+        const clients = [
+            { name: 'Al Mouj Group', contact: 'Ahmed Al Harthy', phone: '91234567', contracts: 2, value: 450000, status: 'Active' },
+            { name: 'Oman Air', contact: 'Salim Al Kindi', phone: '92345678', contracts: 1, value: 125000, status: 'Active' },
+            { name: 'City Centre Mall', contact: 'Mohammed Al Balushi', phone: '93456789', contracts: 1, value: 95000, status: 'Active' }
+        ];
+
+        const projects = [
+            { name: 'Al Mouj Tower FM', client: 'Al Mouj Group', budget: 125000, cost: 98000, progress: 45, status: 'Active' },
+            { name: 'City Centre Cleaning', client: 'Majid Al Futtaim', budget: 95000, cost: 72000, progress: 70, status: 'Active' },
+            { name: 'Oman Air HVAC Upgrade', client: 'Oman Air', budget: 78000, cost: 65000, progress: 30, status: 'Active' }
+        ];
+
+        function loadCompanies() {
+            const companies = ['Niyaz International LLC', 'Niyaz Facilities Management', 'Niyaz Technical Services'];
+            const select = document.getElementById('companySelect');
+            if(select) select.innerHTML = companies.map(c => `<option>${c}</option>`).join('');
+        }
+
+        function generateAttendanceReport() {
+            const tbody = document.getElementById('attendanceReportBody');
+            const workerTbody = document.getElementById('workerAttendanceBody');
+            
+            // Sample daily data
+            const dailyData = [
+                { date: '2026-05-01', total: 5, present: 4, absent: 1, late: 0, rate: 80 },
+                { date: '2026-05-02', total: 5, present: 5, absent: 0, late: 0, rate: 100 },
+                { date: '2026-05-03', total: 5, present: 4, absent: 1, late: 1, rate: 80 }
+            ];
+            
+            tbody.innerHTML = dailyData.map(d => `
+                <tr><td>${d.date}</td><td>${d.total}</td><td>${d.present}</td><td>${d.absent}</td><td>${d.late}</td><td>${d.rate}%</td></tr>
+            `).join('');
+            
+            workerTbody.innerHTML = workers.map(w => {
+                const present = Math.floor(Math.random() * 22) + 20;
+                const absent = 22 - present;
+                const rate = ((present / 22) * 100).toFixed(1);
+                return `<tr><td>${w.name}</td><td>${w.site}</td><td>${present}</td><td>${absent}</td><td>${Math.floor(Math.random() * 3)}</td><td>${rate}%</td></tr>`;
+            }).join('');
+            
+            document.getElementById('totalWorkersCount').textContent = workers.length;
+            document.getElementById('presentCount').textContent = '4';
+            document.getElementById('absentCount').textContent = '1';
+            document.getElementById('attendanceRate').textContent = '85%';
+        }
+
+        function generatePayrollReport() {
+            const tbody = document.getElementById('payrollReportBody');
+            let total = 0;
+            tbody.innerHTML = workers.map(w => {
+                const allowances = w.salary * 0.3;
+                const gross = w.salary + allowances;
+                const deductions = w.salary * 0.07;
+                const net = gross - deductions;
+                total += net;
+                return `<tr><td>${w.name}</td><td>${w.salary}</td><td>${allowances.toFixed(2)}</td><td>${gross.toFixed(2)}</td><td>${deductions.toFixed(2)}</td><td><strong>${net.toFixed(2)}</strong></td><td>0123XXXX</td></tr>`;
+            }).join('');
+            
+            document.getElementById('totalSalary').textContent = workers.reduce((s,w)=>s+w.salary,0);
+            document.getElementById('totalDeductionsReport').textContent = (workers.reduce((s,w)=>s+w.salary,0) * 0.07).toFixed(2);
+            document.getElementById('netPayable').textContent = total.toFixed(2);
+            document.getElementById('avgSalary').textContent = (workers.reduce((s,w)=>s+w.salary,0)/workers.length).toFixed(0);
+        }
+
+        function generateFinancialReport() {
+            const revenue = 125000;
+            const expenses = 78500;
+            const profit = revenue - expenses;
+            const vat = revenue * 0.05;
+            
+            document.getElementById('totalRevenueFin').textContent = revenue;
+            document.getElementById('totalExpensesFin').textContent = expenses;
+            document.getElementById('netProfitFin').textContent = profit;
+            document.getElementById('vatTotal').textContent = vat;
+            
+            const plBody = document.getElementById('plBody');
+            plBody.innerHTML = `
+                <tr><td>Service Revenue</td><td>${revenue}</td><td>100%</td></tr>
+                <tr><td>Salaries Expense</td><td>45000</td><td>36%</td></tr>
+                <tr><td>Materials Expense</td><td>18500</td><td>14.8%</td></tr>
+                <tr><td>Rent & Utilities</td><td>15000</td><td>12%</td></tr>
+                <tr style="background:#f0f2f5;"><td><strong>Net Profit</strong></td><td><strong>${profit}</strong></td><td><strong>${((profit/revenue)*100).toFixed(1)}%</strong></td></tr>
+            `;
+            
+            const trendBody = document.getElementById('revenueTrendBody');
+            trendBody.innerHTML = `
+                <tr><td>January</td><td>18500</td><td>11200</td><td>7300</td><td>925</td></tr>
+                <tr><td>February</td><td>19200</td><td>11800</td><td>7400</td><td>960</td></tr>
+                <tr><td>March</td><td>20100</td><td>12300</td><td>7800</td><td>1005</td></tr>
+                <tr><td>April</td><td>21500</td><td>13100</td><td>8400</td><td>1075</td></tr>
+                <tr><td>May</td><td>22800</td><td>13900</td><td>8900</td><td>1140</td></tr>
+            `;
+        }
+
+        function generateProjectReport() {
+            const tbody = document.getElementById('projectReportBody');
+            tbody.innerHTML = projects.map(p => `
+                <tr><td>${p.name}</td><td>${p.client}</td><td>${p.budget}</td><td>${p.cost}</td><td>${p.progress}%</td><td><span class="badge badge-active">${p.status}</span></td></tr>
+            `).join('');
+            
+            document.getElementById('totalProjectsCount').textContent = projects.length;
+            document.getElementById('activeProjectsCount').textContent = projects.filter(p=>p.status==='Active').length;
+            document.getElementById('completedProjectsCount').textContent = projects.filter(p=>p.status==='Completed').length;
+            document.getElementById('totalBudgetSum').textContent = projects.reduce((s,p)=>s+p.budget,0);
+        }
+
+        function generateHrReport() {
+            const tbody = document.getElementById('hrReportBody');
+            tbody.innerHTML = workers.map(w => `
+                <tr><td>${w.name}</td><td>${w.position}</td><td>${w.skill}</td><td>${w.joinDate}</td><td>${w.salary}</td><td>${w.phone}</td></tr>
+            `).join('');
+            
+            document.getElementById('totalEmployeesHr').textContent = workers.length;
+            document.getElementById('totalLeavesHr').textContent = '12';
+            document.getElementById('totalLoanHr').textContent = '500';
+            document.getElementById('avgSalaryHr').textContent = (workers.reduce((s,w)=>s+w.salary,0)/workers.length).toFixed(0);
+            
+            const leaveBody = document.getElementById('leaveSummaryBody');
+            leaveBody.innerHTML = workers.map(w => `
+                <tr><td>${w.name}</td><td>5</td><td>2</td><td>0</td><td>25</td></tr>
+            `).join('');
+        }
+
+        function generateClientReport() {
+            const tbody = document.getElementById('clientReportBody');
+            tbody.innerHTML = clients.map(c => `
+                <tr><td><strong>${c.name}</strong></td><td>${c.contact}</td><td>${c.phone}</td><td>${c.contracts}</td><td>${c.value}</td><td><span class="badge badge-active">${c.status}</span></td></tr>
+            `).join('');
+            
+            document.getElementById('totalClientsCount').textContent = clients.length;
+            document.getElementById('activeContractsCount').textContent = clients.reduce((s,c)=>s+c.contracts,0);
+            document.getElementById('totalContractValueSum').textContent = clients.reduce((s,c)=>s+c.value,0);
+            document.getElementById('expiringContractsCount').textContent = '2';
+        }
+
+        function generateLabourReport() {
+            const tbody = document.getElementById('labourDistributionBody');
+            const siteStats = sites.map(site => ({
+                name: site,
+                workers: workers.filter(w => w.site === site).length,
+                supervisor: workers.find(w => w.site === site && w.position.includes('Supervisor'))?.name || 'Not Assigned',
+                rate: Math.floor(Math.random() * 20) + 75,
+                cost: workers.filter(w => w.site === site).reduce((s,w)=>s+w.salary,0)
+            }));
+            
+            tbody.innerHTML = siteStats.map(s => `
+                <tr><td>${s.name}</td><td>${s.workers}</td><td>${s.supervisor}</td><td>${s.rate}%</td><td>${s.cost}</td></tr>
+            `).join('');
+            
+            const skillBody = document.getElementById('skillSummaryBody');
+            const skills = ['HVAC', 'Cleaning', 'MEP', 'Security', 'General'];
+            skillBody.innerHTML = skills.map(skill => {
+                const skillWorkers = workers.filter(w => w.skill === skill);
+                const totalSalary = skillWorkers.reduce((s,w)=>s+w.salary,0);
+                return `<tr><td>${skill}</td><td>${skillWorkers.length}</td><td>${skillWorkers.length ? (totalSalary/skillWorkers.length).toFixed(0) : 0}</td><td>${totalSalary}</td></tr>`;
+            }).join('');
+            
+            document.getElementById('totalWorkersLabour').textContent = workers.length;
+            document.getElementById('totalSitesLabour').textContent = sites.length;
+            document.getElementById('avgAttendanceLabour').textContent = '85%';
+            document.getElementById('monthlyCostLabour').textContent = workers.reduce((s,w)=>s+w.salary,0);
+        }
+
+        function showReport(type) {
+            document.getElementById('attendanceReport').style.display = type === 'attendance' ? 'block' : 'none';
+            document.getElementById('payrollReport').style.display = type === 'payroll' ? 'block' : 'none';
+            document.getElementById('financialReport').style.display = type === 'financial' ? 'block' : 'none';
+            document.getElementById('projectReport').style.display = type === 'project' ? 'block' : 'none';
+            document.getElementById('hrReport').style.display = type === 'hr' ? 'block' : 'none';
+            document.getElementById('clientReport').style.display = type === 'client' ? 'block' : 'none';
+            document.getElementById('labourReport').style.display = type === 'labour' ? 'block' : 'none';
+            
+            const btns = ['tabAttendanceBtn','tabPayrollBtn','tabFinancialBtn','tabProjectBtn','tabHrBtn','tabClientBtn','tabLabourBtn'];
+            btns.forEach(btn => { const el = document.getElementById(btn); if(el) el.style.background = '#1a4d8c'; });
+            if(type === 'attendance') document.getElementById('tabAttendanceBtn').style.background = '#0e3a6b';
+            if(type === 'payroll') document.getElementById('tabPayrollBtn').style.background = '#0e3a6b';
+            if(type === 'financial') document.getElementById('tabFinancialBtn').style.background = '#0e3a6b';
+            if(type === 'project') document.getElementById('tabProjectBtn').style.background = '#0e3a6b';
+            if(type === 'hr') document.getElementById('tabHrBtn').style.background = '#0e3a6b';
+            if(type === 'client') document.getElementById('tabClientBtn').style.background = '#0e3a6b';
+            if(type === 'labour') document.getElementById('tabLabourBtn').style.background = '#0e3a6b';
+            
+            // Auto-generate default report
+            if(type === 'attendance') generateAttendanceReport();
+            if(type === 'payroll') generatePayrollReport();
+            if(type === 'financial') generateFinancialReport();
+            if(type === 'project') generateProjectReport();
+            if(type === 'hr') generateHrReport();
+            if(type === 'client') generateClientReport();
+            if(type === 'labour') generateLabourReport();
+        }
+
+        function exportReport(type) {
+            alert(`📄 ${type.toUpperCase()} Report exported as PDF!\nFile: ${type}_report_${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+
+        function exportToExcel(type) {
+            alert(`📊 ${type.toUpperCase()} Report exported to Excel!\nFile: ${type}_report_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+
+        loadCompanies();
+        generateAttendanceReport(); // Load default report
+    </script>
+</body>
+</html>

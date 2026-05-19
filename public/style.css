@@ -484,3 +484,158 @@ button:hover {
         font-size: 0.85rem;
     }
 }
+
+/* ========== REPORTS MODULE STYLES ========== */
+
+/* Report filter buttons */
+.form-card button {
+    margin-top: 0;
+}
+
+/* Stat cards for reports */
+.stat-card h3 {
+    font-size: 1.3rem;
+}
+
+@media (min-width: 768px) {
+    .stat-card h3 {
+        font-size: 1.8rem;
+    }
+}
+
+/* Report tables - make them readable */
+.table-container h3 {
+    margin-bottom: 15px;
+    color: #1a4d8c;
+    font-size: 1rem;
+}
+
+@media (min-width: 768px) {
+    .table-container h3 {
+        font-size: 1.2rem;
+    }
+}
+
+/* Report section spacing */
+#attendanceReport, #payrollReport, #financialReport, 
+#projectReport, #hrReport, #clientReport, #labourReport {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Export buttons */
+.form-card button[onclick*="export"] {
+    background: #28a745;
+}
+
+.form-card button[onclick*="export"]:hover {
+    background: #218838;
+}
+
+.form-card button[onclick*="toExcel"] {
+    background: #17a2b8;
+}
+
+.form-card button[onclick*="toExcel"]:hover {
+    background: #138496;
+}
+
+/* Badge for status */
+.badge-completed {
+    background: #d4edda;
+    color: #28a745;
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #ffc107;
+}
+
+/* Labour summary table */
+#labourDistributionTable td, 
+#skillSummaryTable td {
+    font-size: 0.8rem;
+}
+
+/* Mobile responsive for report filters */
+@media (max-width: 768px) {
+    .form-card > div[style*="grid-template-columns"] {
+        gap: 8px !important;
+    }
+    
+    .form-card button {
+        font-size: 0.75rem;
+        padding: 8px 10px;
+    }
+    
+    /* Make report tables scrollable */
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    table {
+        min-width: 550px;
+    }
+}"" 
+"/* ========== REPORTS MODULE STYLES ========== */" 
+"" 
+".form-card button {" 
+"    margin-top: 0;" 
+"}" 
+"" 
+".stat-card h3 {" 
+"    font-size: 1.3rem;" 
+"}" 
+"" 
+"@media (min-width: 768px) {" 
+"    .stat-card h3 {" 
+"        font-size: 1.8rem;" 
+"    }" 
+"}" 
+"" 
+".table-container h3 {" 
+"    margin-bottom: 15px;" 
+"    color: #1a4d8c;" 
+"    font-size: 1rem;" 
+"}" 
+"" 
+"@media (min-width: 768px) {" 
+"    .table-container h3 {" 
+"        font-size: 1.2rem;" 
+"    }" 
+"}" 
+"" 
+"#attendanceReport, #payrollReport, #financialReport, " 
+"#projectReport, #hrReport, #clientReport, #labourReport {" 
+"    animation: fadeIn 0.3s ease;" 
+"}" 
+"" 
+"@keyframes fadeIn {" 
+"    from { opacity: 0; transform: translateY(10px); }" 
+"    to { opacity: 1; transform: translateY(0); }" 
+"}" 
+"" 
+".form-card button[onclick*=\"export\"] {" 
+"    background: #28a745;" 
+"}" 
+"" 
+".form-card button[onclick*=\"export\"]:hover {" 
+"    background: #218838;" 
+"}" 
+"" 
+"@media (max-width: 768px) {" 
+"    .form-card button {" 
+"        font-size: 0.75rem;" 
+"        padding: 8px 10px;" 
+"    }" 
+"    .table-container {" 
+"        overflow-x: auto;" 
+"    }" 
+"    table {" 
+"        min-width: 550px;" 
+"    }" 
+"}" 
