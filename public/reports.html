@@ -5,33 +5,92 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reports - Niyaz ERP</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer">
-        // ========== ROLE-BASED MENU FILTERING ==========
-        async function filterMenuByRole() {
-            try {
-                const token = localStorage.getItem("erp_token");
-                if (!token) return;
-                const response = await fetch("/api/user-menu", { headers: { "Authorization": token } });
-                const data = await response.json();
-                if (!data.loggedIn) return;
-                const allowedPages = data.menus;
-                console.log("Role:", data.role, "Allowed:", allowedPages);
-                const menuLinks = document.querySelectorAll(".sidebar-nav a");
-                menuLinks.forEach(link => {
-                    const href = link.getAttribute("href");
-                    if (!href || href === "#") return;
-                    const pageName = href.replace(".html", "");
-                    if (pageName === "logout") return;
-                    if (!allowedPages.includes(pageName) && pageName !== "") {
-                        link.style.display = "none";
-                    } else {
-                        link.style.display = "flex";
-                    }
-                });
-            } catch(e) { console.error(e); }
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        .report-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            overflow-x: auto;
+            padding-bottom: 5px;
         }
-        filterMenuByRole();
-    </script>
+        .report-tabs button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            background: #e9ecef;
+        }
+        .report-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+        }
+        .filter-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .filter-bar select, .filter-bar input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .stats-mini {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-mini {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-mini h4 {
+            font-size: 1.5rem;
+            color: #1a4d8c;
+            margin-bottom: 5px;
+        }
+        .btn-generate {
+            background: #1a4d8c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-export {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background: #f0f2f5;
+        }
+        canvas {
+            max-height: 250px;
+        }
+    </style>
 </head>
 <body>
     <div class="app">
@@ -65,105 +124,56 @@
 
             <h1>📈 Reports & Analytics</h1>
 
-            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-                <button onclick="showReport('attendance')" id="tabAttendanceBtn" style="background:#1a4d8c;">📅 Attendance Report</button>
-                <button onclick="showReport('labour')" id="tabLabourBtn">👷 Labour Summary</button>
-                <button onclick="showReport('payroll')" id="tabPayrollBtn">💰 Payroll Report</button>
+            <div class="report-tabs">
+                <button onclick="showReport('attendance')" id="tabAttendance" style="background:#1a4d8c; color:white;">📅 Attendance</button>
+                <button onclick="showReport('payroll')" id="tabPayroll">💰 Payroll</button>
+                <button onclick="showReport('pl')" id="tabPL">📊 P&L</button>
+                <button onclick="showReport('vat')" id="tabVAT">💸 VAT</button>
+                <button onclick="showReport('leave')" id="tabLeave">🌴 Leave</button>
+                <button onclick="showReport('payment')" id="tabPayment">💳 Payment</button>
+                <button onclick="showReport('topclients')" id="tabTopClients">🏆 Top Clients</button>
+                <button onclick="showReport('contractexpiry')" id="tabContractExpiry">📄 Contract Expiry</button>
+                <button onclick="showReport('labour')" id="tabLabour">👷 Labour</button>
             </div>
 
             <!-- Attendance Report -->
             <div id="attendanceReport">
-                <div class="form-card">
-                    <h3>📅 Attendance Report Filters</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 10px;">
-                        <select id="attendanceMonth">
-                            <option>May 2026</option>
-                            <option>April 2026</option>
-                            <option>March 2026</option>
-                        </select>
-                        <button onclick="generateAttendanceReport()">📊 Generate Report</button>
-                        <button onclick="exportAttendanceToPDF()">📥 Export PDF</button>
-                    </div>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card"><h3 id="totalWorkers">0</h3><p>Total Workers</p></div>
-                    <div class="stat-card"><h3 id="presentCount">0</h3><p>Present</p></div>
-                    <div class="stat-card"><h3 id="absentCount">0</h3><p>Absent</p></div>
-                    <div class="stat-card vat"><h3 id="attendanceRate">0%</h3><p>Attendance Rate</p></div>
-                </div>
-
-                <div id="attendanceReportContent">
-                    <div class="table-container">
-                        <h3>📋 Daily Attendance Summary</h3>
-                        <table id="attendanceReportTable">
-                            <thead>
-                                <tr>
-                                    <th>Date</th><th>Total Workers</th><th>Present</th><th>Absent</th><th>Late</th><th>Attendance %</th>
-                                </tr>
-                            </thead>
-                            <tbody id="attendanceReportBody"></tbody>
-                        </table>
-                    </div>
-
-                    <div class="table-container">
-                        <h3>👥 Worker-wise Attendance</h3>
-                        <table id="workerAttendanceTable">
-                            <thead>
-                                <tr>
-                                    <th>Worker Name</th><th>Site</th><th>Present Days</th><th>Absent Days</th><th>Late Days</th><th>Attendance %</th>
-                                </tr>
-                            </thead>
-                            <tbody id="workerAttendanceBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Labour Summary -->
-            <div id="labourReport" style="display:none;">
-                <div class="form-card">
-                    <h3>👷 Labour Summary Report</h3>
-                    <button onclick="generateLabourReport()">📊 Generate Report</button>
-                    <button onclick="exportLabourToPDF()">📥 Export PDF</button>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-card"><h3 id="totalWorkersLab">0</h3><p>Total Workers</p></div>
-                    <div class="stat-card"><h3 id="totalSitesLab">0</h3><p>Total Sites</p></div>
-                    <div class="stat-card"><h3 id="avgAttendanceLab">0%</h3><p>Avg Attendance</p></div>
-                    <div class="stat-card vat"><h3 id="monthlyCostLab">0</h3><p>Monthly Cost (OMR)</p></div>
-                </div>
-                <div id="labourReportContent">
-                    <div class="table-container">
-                        <table id="labourTable">
-                            <thead><tr><th>Site Name</th><th>Total Workers</th><th>Supervisor</th><th>Attendance Rate</th><th>Monthly Cost</th></tr></thead>
-                            <tbody id="labourBody"></tbody>
-                        }</table>
-                    </div>
-                </div>
+                <div class="report-card"><h3>📅 Attendance Report</h3><div class="filter-bar"><select id="attMonth"><option>May 2026</option></select><button class="btn-generate" onclick="generateAttendanceReport()">Generate</button><button class="btn-export" onclick="exportReport('attendance')">Export</button></div></div>
+                <div class="stats-mini" id="attStats"></div>
+                <div class="report-card"><h3>📋 Daily Attendance</h3><table><thead><tr><th>Date</th><th>Present</th><th>Absent</th><th>Rate</th></tr></thead><tbody id="attBody"></tbody></table></div>
             </div>
 
             <!-- Payroll Report -->
-            <div id="payrollReport" style="display:none;">
-                <div class="form-card">
-                    <h3>💰 Payroll Report</h3>
-                    <button onclick="generatePayrollReport()">📊 Generate Report</button>
-                    <button onclick="exportPayrollToPDF()">📥 Export PDF</button>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-card"><h3 id="totalSalary">0</h3><p>Total Salary</p></div>
-                    <div class="stat-card"><h3 id="totalDeductionsReport">0</h3><p>Total Deductions</p></div>
-                    <div class="stat-card vat"><h3 id="netPayableReport">0</h3><p>Net Payable</p></div>
-                </div>
-                <div id="payrollReportContent">
-                    <div class="table-container">
-                        <table id="payrollReportTable">
-                            <thead><tr><th>Employee</th><th>Basic Salary</th><th>Housing</th><th>Transport</th><th>Gross Pay</th><th>Deductions</th><th>Net Pay</th></tr></thead>
-                            <tbody id="payrollReportBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+            <div id="payrollReport" style="display:none;"><div class="report-card"><h3>💰 Payroll Report</h3><button class="btn-generate" onclick="generatePayrollReport()">Generate</button><button class="btn-export" onclick="exportReport('payroll')">Export</button></div>
+            <div class="stats-mini" id="payStats"></div><div class="report-card"><table><thead><tr><th>Employee</th><th>Basic</th><th>Deductions</th><th>Net Pay</th></tr></thead><tbody id="payBody"></tbody></table></div></div>
+
+            <!-- P&L Report -->
+            <div id="plReport" style="display:none;"><div class="report-card"><h3>📊 Profit & Loss</h3><button class="btn-generate" onclick="generatePLReport()">Generate</button><button class="btn-export" onclick="exportReport('pl')">Export</button></div>
+            <div class="stats-mini" id="plStats"></div><div class="report-card"><canvas id="plCanvas"></canvas></div></div>
+
+            <!-- VAT Report -->
+            <div id="vatReport" style="display:none;"><div class="report-card"><h3>💸 VAT Summary</h3><button class="btn-generate" onclick="generateVATReport()">Generate</button><button class="btn-export" onclick="exportReport('vat')">Export</button></div>
+            <div class="stats-mini" id="vatStats"></div><div class="report-card"><tr><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>VAT</th></tr></thead><tbody id="vatBody"></tbody></table></div></div>
+
+            <!-- Leave Report -->
+            <div id="leaveReport" style="display:none;"><div class="report-card"><h3>🌴 Leave Report</h3><button class="btn-generate" onclick="generateLeaveReport()">Generate</button><button class="btn-export" onclick="exportReport('leave')">Export</button></div>
+            <div class="stats-mini" id="leaveStats"></div><div class="report-card"></td><thead><tr><th>Employee</th><th>Annual</th><th>Sick</th><th>Remaining</th></tr></thead><tbody id="leaveBody"></tbody></table></div></div>
+
+            <!-- Payment Report -->
+            <div id="paymentReport" style="display:none;"><div class="report-card"><h3>💳 Payment Report</h3><button class="btn-generate" onclick="generatePaymentReport()">Generate</button><button class="btn-export" onclick="exportReport('payment')">Export</button></div>
+            <div class="stats-mini" id="paymentStats"></div><div class="report-card"><table><thead><tr><th>Invoice</th><th>Client</th><th>Amount</th><th>Status</th></tr></thead><tbody id="paymentBody"></tbody></table></div></div>
+
+            <!-- Top Clients Report -->
+            <div id="topclientsReport" style="display:none;"><div class="report-card"><h3>🏆 Top Clients</h3><button class="btn-generate" onclick="generateTopClientsReport()">Generate</button><button class="btn-export" onclick="exportReport('topclients')">Export</button></div>
+            <div class="report-card"><canvas id="topClientsCanvas"></canvas></div><div class="report-card"></table><thead><tr><th>Rank</th><th>Client</th><th>Revenue</th></tr></thead><tbody id="topClientsBody"></tbody></table></div></div>
+
+            <!-- Contract Expiry Report -->
+            <div id="contractexpiryReport" style="display:none;"><div class="report-card"><h3>📄 Contracts Expiring Soon</h3><button class="btn-generate" onclick="generateContractExpiryReport()">Generate</button><button class="btn-export" onclick="exportReport('contractexpiry')">Export</button></div>
+            <div class="report-card"><table><thead><tr><th>Client</th><th>Contract</th><th>End Date</th><th>Days Left</th><th>Value</th></tr></thead><tbody id="expiryBody"></tbody></table></div></div>
+
+            <!-- Labour Report -->
+            <div id="labourReport" style="display:none;"><div class="report-card"><h3>👷 Labour Summary</h3><button class="btn-generate" onclick="generateLabourReport()">Generate</button><button class="btn-export" onclick="exportReport('labour')">Export</button></div>
+            <div class="stats-mini" id="labourStats"></div><div class="report-card"><canvas id="labourCanvas"></canvas></div><div class="report-card"><table><thead><tr><th>Site</th><th>Workers</th><th>Supervisor</th><th>Cost</th></tr></thead><tbody id="labourBody"></tbody></table></div></div>
         </main>
     </div>
 
@@ -171,218 +181,169 @@
         const token = localStorage.getItem('erp_token');
         if (!token) { window.location.href = '/login.html'; }
 
-        const reportData = {
-            1: { 
-                workers: 45, present: 40, absent: 5, rate: 89, 
-                sites: 2, cost: 22500,
-                employees: [
-                    { name: 'Ahmed Al Balushi', site: 'Al Mouj Tower', present: 22, absent: 0, late: 0, rate: 100 },
-                    { name: 'Salim Al Hinai', site: 'City Centre Mall', present: 20, absent: 2, late: 1, rate: 91 }
-                ],
-                dailyData: [
-                    { date: '2026-05-01', total: 45, present: 40, absent: 5, late: 2, rate: 89 },
-                    { date: '2026-05-02', total: 45, present: 42, absent: 3, late: 1, rate: 93 },
-                    { date: '2026-05-03', total: 45, present: 38, absent: 7, late: 3, rate: 84 }
-                ],
-                payroll: [
-                    { name: 'Ahmed Al Balushi', basic: 850, housing: 200, transport: 100, deductions: 59.5, net: 1090.5 },
-                    { name: 'Salim Al Hinai', basic: 750, housing: 150, transport: 80, deductions: 52.5, net: 927.5 }
-                ]
-            },
-            2: { 
-                workers: 28, present: 24, absent: 4, rate: 86, 
-                sites: 1, cost: 14000,
-                employees: [
-                    { name: 'Mohammed Al Riyami', site: 'Industrial Area', present: 21, absent: 1, late: 1, rate: 95 }
-                ],
-                dailyData: [
-                    { date: '2026-05-01', total: 28, present: 24, absent: 4, late: 1, rate: 86 }
-                ],
-                payroll: [
-                    { name: 'Mohammed Al Riyami', basic: 650, housing: 120, transport: 70, deductions: 45.5, net: 794.5 }
-                ]
-            },
-            3: { 
-                workers: 19, present: 17, absent: 2, rate: 89, 
-                sites: 1, cost: 9500,
-                employees: [
-                    { name: 'Rashid Al Saadi', site: 'Airport', present: 22, absent: 0, late: 0, rate: 100 },
-                    { name: 'Khalid Al Shukaili', site: 'Airport', present: 19, absent: 3, late: 1, rate: 86 }
-                ],
-                dailyData: [
-                    { date: '2026-05-01', total: 19, present: 17, absent: 2, late: 1, rate: 89 }
-                ],
-                payroll: [
-                    { name: 'Rashid Al Saadi', basic: 450, housing: 80, transport: 50, deductions: 31.5, net: 548.5 },
-                    { name: 'Khalid Al Shukaili', basic: 400, housing: 60, transport: 40, deductions: 28, net: 472 }
-                ]
-            }
-        };
-
+        let plChart, topChart, labourChart;
         let currentCompanyId = 1;
 
         function loadCompanySelector() {
-            const companies = [
-                { id: 1, name: 'Niyaz International LLC' },
-                { id: 2, name: 'Niyaz Facilities Management' },
-                { id: 3, name: 'Niyaz Technical Services' }
-            ];
+            const companies = [{id:1,name:'Niyaz International LLC'},{id:2,name:'Niyaz Facilities Management'},{id:3,name:'Niyaz Technical Services'}];
             const select = document.getElementById('companySelect');
-            if (select) {
+            if(select) {
                 select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
                 select.onchange = function() {
                     currentCompanyId = parseInt(this.value);
-                    generateAttendanceReport();
+                    refreshCurrentReport();
                 };
             }
         }
 
-        function generateAttendanceReport() {
-            const data = reportData[currentCompanyId];
-            if (!data) return;
-            
-            document.getElementById('totalWorkers').textContent = data.workers;
-            document.getElementById('presentCount').textContent = data.present;
-            document.getElementById('absentCount').textContent = data.absent;
-            document.getElementById('attendanceRate').textContent = data.rate + '%';
-            
-            const dailyBody = document.getElementById('attendanceReportBody');
-            if (dailyBody) {
-                dailyBody.innerHTML = data.dailyData.map(d => `
-                    <tr><td>${d.date}</td><td>${d.total}</td><td>${d.present}</td><td>${d.absent}</td><td>${d.late}</td><td style="color:${d.rate >= 85 ? '#28a745' : '#dc3545'}; font-weight:bold;">${d.rate}%</td></tr>
-                `).join('');
-            }
-            
-            const workerBody = document.getElementById('workerAttendanceBody');
-            if (workerBody) {
-                workerBody.innerHTML = data.employees.map(w => `
-                    <tr><td>${w.name}</td><td>${w.site}</td><td>${w.present}</td><td>${w.absent}</td><td>${w.late}</td><td style="color:${w.rate >= 85 ? '#28a745' : '#dc3545'}; font-weight:bold;">${w.rate}%</td></tr>
-                `).join('');
-            }
+        let currentReport = 'attendance';
+
+        function refreshCurrentReport() {
+            if(currentReport === 'attendance') generateAttendanceReport();
+            else if(currentReport === 'payroll') generatePayrollReport();
+            else if(currentReport === 'pl') generatePLReport();
+            else if(currentReport === 'vat') generateVATReport();
+            else if(currentReport === 'leave') generateLeaveReport();
+            else if(currentReport === 'payment') generatePaymentReport();
+            else if(currentReport === 'topclients') generateTopClientsReport();
+            else if(currentReport === 'contractexpiry') generateContractExpiryReport();
+            else if(currentReport === 'labour') generateLabourReport();
         }
 
-        function generateLabourReport() {
-            const data = reportData[currentCompanyId];
-            if (!data) return;
-            
-            document.getElementById('totalWorkersLab').textContent = data.workers;
-            document.getElementById('totalSitesLab').textContent = data.sites;
-            document.getElementById('avgAttendanceLab').textContent = data.rate + '%';
-            document.getElementById('monthlyCostLab').textContent = data.cost.toLocaleString();
-            
-            const labourBody = document.getElementById('labourBody');
-            if (labourBody) {
-                labourBody.innerHTML = data.employees.map(w => `
-                    <tr><td>${w.site}</td><td>${data.workers}</td><td>${w.name}</td><td>${w.rate}%</td><td>${Math.floor(data.cost / data.sites).toLocaleString()}</td></tr>
-                `).join('');
+        // Company-specific data
+        const reportsData = {
+            1: { // Niyaz International LLC
+                attendance: { total: 45, present: 40, absent: 5, rate: 89, data: [['2026-05-01',40,5,'89%'],['2026-05-02',42,3,'93%'],['2026-05-03',38,7,'84%']] },
+                payroll: { total: 3330, deductions: 233, net: 3097, employees: [['Ahmed Al Balushi',850,59.5,790.5],['Salim Al Hinai',750,52.5,697.5],['Aamir Durrani',1000,70,930]] },
+                pl: { revenue: 125000, expenses: 78500, profit: 46500 },
+                vat: { collected: 6250, paid: 3925, net: 2325, transactions: [['2026-05-01','Invoice',25000,1250],['2026-05-08','Expense',8500,425]] },
+                leave: { total: 12, annual: 8, sick: 4, employees: [['Ahmed Al Balushi',5,1,20],['Salim Al Hinai',3,3,18]] },
+                payment: { total: 4, paid: 3, unpaid: 1, invoices: [['INV-1001','Al Mouj Group',25000,'Paid'],['INV-1002','Oman Air',18500,'Paid'],['INV-1003','City Centre',32000,'Unpaid']] },
+                topclients: [['1','Al Mouj Group',450000],['2','Oman Air',125000],['3','City Centre Mall',95000]],
+                contractexpiry: [['Al Mouj Group','Facility Management','2026-12-31',225,450000],['Oman Air','HVAC Maintenance','2027-03-31',315,125000]],
+                labour: { totalWorkers: 45, totalSites: 3, avgAttendance: 89, monthlyCost: 45000, sites: [['Al Mouj Tower',22,'Ahmed','92%',18700],['City Centre Mall',15,'Salim','88%',12750],['Oman Air HQ',8,'Mohammed','85%',6800]] }
+            },
+            2: { // Niyaz Facilities Management
+                attendance: { total: 28, present: 24, absent: 4, rate: 86, data: [['2026-05-01',24,4,'86%'],['2026-05-02',25,3,'89%'],['2026-05-03',22,6,'79%']] },
+                payroll: { total: 2100, deductions: 147, net: 1953, employees: [['Mohammed Al Riyami',650,45.5,604.5],['Yousef Al Hinai',800,56,744],['Nasser Al Riyami',650,45.5,604.5]] },
+                pl: { revenue: 78000, expenses: 52000, profit: 26000 },
+                vat: { collected: 3900, paid: 2600, net: 1300, transactions: [['2026-05-02','Invoice',18000,900],['2026-05-09','Expense',12000,600]] },
+                leave: { total: 8, annual: 5, sick: 3, employees: [['Mohammed Al Riyami',3,2,15],['Yousef Al Hinai',2,1,17]] },
+                payment: { total: 3, paid: 2, unpaid: 1, invoices: [['INV-2001','City Centre Mall',18000,'Paid'],['INV-2002','Bank Muscat',12000,'Unpaid']] },
+                topclients: [['1','City Centre Mall',180000],['2','Bank Muscat',75000]],
+                contractexpiry: [['City Centre Mall','Cleaning','2026-12-31',225,95000]],
+                labour: { totalWorkers: 28, totalSites: 2, avgAttendance: 86, monthlyCost: 28000, sites: [['Industrial Area',15,'Mohammed','86%',15000],['Seeb Facility',13,'Yousef','85%',13000]] }
+            },
+            3: { // Niyaz Technical Services
+                attendance: { total: 19, present: 17, absent: 2, rate: 89, data: [['2026-05-01',17,2,'89%'],['2026-05-02',18,1,'95%'],['2026-05-03',16,3,'84%']] },
+                payroll: { total: 1700, deductions: 119, net: 1581, employees: [['Rashid Al Saadi',450,31.5,418.5],['Khalid Al Shukaili',400,28,372],['Nasser Al Riyami',550,38.5,511.5]] },
+                pl: { revenue: 45000, expenses: 31000, profit: 14000 },
+                vat: { collected: 2250, paid: 1550, net: 700, transactions: [['2026-05-03','Invoice',5000,250],['2026-05-10','Expense',3000,150]] },
+                leave: { total: 6, annual: 4, sick: 2, employees: [['Rashid Al Saadi',2,1,22],['Khalid Al Shukaili',2,1,23]] },
+                payment: { total: 2, paid: 2, unpaid: 0, invoices: [['INV-3001','Oman Airports',8000,'Paid'],['INV-3002','Oman Airports',5000,'Paid']] },
+                topclients: [['1','Oman Airports',80000],['2','PDO',150000]],
+                contractexpiry: [['Oman Airports','Security Systems','2027-02-28',285,75000]],
+                labour: { totalWorkers: 19, totalSites: 2, avgAttendance: 89, monthlyCost: 19000, sites: [['Airport',12,'Rashid','90%',12000],['Technical Center',7,'Khalid','88%',7000]] }
             }
+        };
+
+        function generateAttendanceReport() {
+            const data = reportsData[currentCompanyId].attendance;
+            document.getElementById('attStats').innerHTML = `<div class="stat-mini"><h4>${data.total}</h4><p>Total Workers</p></div><div class="stat-mini"><h4>${data.present}</h4><p>Present</p></div><div class="stat-mini"><h4>${data.absent}</h4><p>Absent</p></div><div class="stat-mini"><h4>${data.rate}%</h4><p>Attendance Rate</p></div>`;
+            document.getElementById('attBody').innerHTML = data.data.map(d => `<tr><td>${d[0]}</td><td>${d[1]}</td><td>${d[2]}</td><td>${d[3]}</td></tr>`).join('');
         }
 
         function generatePayrollReport() {
-            const data = reportData[currentCompanyId];
-            if (!data) return;
-            
-            const totalSalary = data.payroll.reduce((s, e) => s + e.basic, 0);
-            const totalDeductions = data.payroll.reduce((s, e) => s + e.deductions, 0);
-            const totalNet = data.payroll.reduce((s, e) => s + e.net, 0);
-            
-            document.getElementById('totalSalary').textContent = totalSalary;
-            document.getElementById('totalDeductionsReport').textContent = totalDeductions.toFixed(2);
-            document.getElementById('netPayableReport').textContent = totalNet.toFixed(2);
-            
-            const payrollBody = document.getElementById('payrollReportBody');
-            if (payrollBody) {
-                payrollBody.innerHTML = data.payroll.map(e => `
-                    <tr><td>${e.name}</td><td>${e.basic}</td><td>${e.housing}</td><td>${e.transport}</td><td>${e.basic + e.housing + e.transport}</td><td>${e.deductions.toFixed(2)}</td><td style="color:#28a745; font-weight:bold;">${e.net.toFixed(2)}</td></tr>
-                `).join('');
-            }
+            const data = reportsData[currentCompanyId].payroll;
+            document.getElementById('payStats').innerHTML = `<div class="stat-mini"><h4>${data.total}</h4><p>Total Salary</p></div><div class="stat-mini"><h4>${data.deductions}</h4><p>Deductions</p></div><div class="stat-mini"><h4>${data.net}</h4><p>Net Payable</p></div>`;
+            document.getElementById('payBody').innerHTML = data.employees.map(e => `<tr><td>${e[0]}</td><td>${e[1]}</td><td>${e[2]}</td><td>${e[3]}</td></tr>`).join('');
         }
 
-        function exportAttendanceToPDF() {
-            const element = document.getElementById('attendanceReportContent');
-            const companyName = document.getElementById('companySelect').options[document.getElementById('companySelect').selectedIndex]?.text || 'Niyaz Group';
-            const opt = {
-                margin: [0.5, 0.5, 0.5, 0.5],
-                filename: `Attendance_Report_${companyName.replace(/ /g, '_')}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, letterRendering: true },
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
+        function generatePLReport() {
+            const data = reportsData[currentCompanyId].pl;
+            document.getElementById('plStats').innerHTML = `<div class="stat-mini"><h4>${data.revenue.toLocaleString()}</h4><p>Revenue</p></div><div class="stat-mini"><h4>${data.expenses.toLocaleString()}</h4><p>Expenses</p></div><div class="stat-mini"><h4>${data.profit.toLocaleString()}</h4><p>Net Profit</p></div>`;
+            if(plChart) plChart.destroy();
+            plChart = new Chart(document.getElementById('plCanvas'), { type: 'bar', data: { labels: ['Revenue', 'Expenses', 'Profit'], datasets: [{ data: [data.revenue, data.expenses, data.profit], backgroundColor: ['#28a745', '#dc3545', '#1a4d8c'] }] } });
         }
 
-        function exportLabourToPDF() {
-            const element = document.getElementById('labourReportContent');
-            const companyName = document.getElementById('companySelect').options[document.getElementById('companySelect').selectedIndex]?.text || 'Niyaz Group';
-            const opt = {
-                margin: [0.5, 0.5, 0.5, 0.5],
-                filename: `Labour_Report_${companyName.replace(/ /g, '_')}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
+        function generateVATReport() {
+            const data = reportsData[currentCompanyId].vat;
+            document.getElementById('vatStats').innerHTML = `<div class="stat-mini"><h4>${data.collected.toLocaleString()}</h4><p>VAT Collected</p></div><div class="stat-mini"><h4>${data.paid.toLocaleString()}</h4><p>VAT Paid</p></div><div class="stat-mini"><h4>${data.net.toLocaleString()}</h4><p>Net VAT</p></div>`;
+            document.getElementById('vatBody').innerHTML = data.transactions.map(t => `<tr><td>${t[0]}</td><td>${t[1]}</td><td>${t[2].toLocaleString()}</td><td>${t[3].toLocaleString()}</td></tr>`).join('');
         }
 
-        function exportPayrollToPDF() {
-            const element = document.getElementById('payrollReportContent');
-            const companyName = document.getElementById('companySelect').options[document.getElementById('companySelect').selectedIndex]?.text || 'Niyaz Group';
-            const opt = {
-                margin: [0.5, 0.5, 0.5, 0.5],
-                filename: `Payroll_Report_${companyName.replace(/ /g, '_')}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(opt).from(element).save();
+        function generateLeaveReport() {
+            const data = reportsData[currentCompanyId].leave;
+            document.getElementById('leaveStats').innerHTML = `<div class="stat-mini"><h4>${data.total}</h4><p>Total Leaves</p></div><div class="stat-mini"><h4>${data.annual}</h4><p>Annual</p></div><div class="stat-mini"><h4>${data.sick}</h4><p>Sick</p></div>`;
+            document.getElementById('leaveBody').innerHTML = data.employees.map(e => `<tr><td>${e[0]}</td><td>${e[1]}</td><td>${e[2]}</td><td>${e[3]}</td></tr>`).join('');
+        }
+
+        function generatePaymentReport() {
+            const data = reportsData[currentCompanyId].payment;
+            document.getElementById('paymentStats').innerHTML = `<div class="stat-mini"><h4>${data.total}</h4><p>Total Invoices</p></div><div class="stat-mini"><h4>${data.paid}</h4><p>Paid</p></div><div class="stat-mini"><h4>${data.unpaid}</h4><p>Unpaid</p></div>`;
+            document.getElementById('paymentBody').innerHTML = data.invoices.map(i => `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2].toLocaleString()}</td><td>${i[3]}</td></tr>`).join('');
+        }
+
+        function generateTopClientsReport() {
+            const data = reportsData[currentCompanyId].topclients;
+            document.getElementById('topClientsBody').innerHTML = data.map(c => `<tr><td>${c[0]}</td><td>${c[1]}</td><td>${c[2].toLocaleString()}</td></tr>`).join('');
+            if(topChart) topChart.destroy();
+            topChart = new Chart(document.getElementById('topClientsCanvas'), { type: 'bar', data: { labels: data.map(c => c[1]), datasets: [{ data: data.map(c => c[2]), backgroundColor: '#ffc107' }] } });
+        }
+
+        function generateContractExpiryReport() {
+            const data = reportsData[currentCompanyId].contractexpiry;
+            document.getElementById('expiryBody').innerHTML = data.map(c => `<tr><td>${c[0]}</td><td>${c[1]}</td><td>${c[2]}</td><td>${c[3]}</td><td>${c[4].toLocaleString()}</td></tr>`).join('');
+        }
+
+        function generateLabourReport() {
+            const data = reportsData[currentCompanyId].labour;
+            document.getElementById('labourStats').innerHTML = `<div class="stat-mini"><h4>${data.totalWorkers}</h4><p>Total Workers</p></div><div class="stat-mini"><h4>${data.totalSites}</h4><p>Total Sites</p></div><div class="stat-mini"><h4>${data.avgAttendance}%</h4><p>Avg Attendance</p></div><div class="stat-mini"><h4>${data.monthlyCost.toLocaleString()}</h4><p>Monthly Cost</p></div>`;
+            document.getElementById('labourBody').innerHTML = data.sites.map(s => `<tr><td>${s[0]}</td><td>${s[1]}</td><td>${s[2]}</td><td>${s[4].toLocaleString()}</td></tr>`).join('');
+            if(labourChart) labourChart.destroy();
+            labourChart = new Chart(document.getElementById('labourCanvas'), { type: 'bar', data: { labels: data.sites.map(s => s[0]), datasets: [{ label: 'Workers', data: data.sites.map(s => s[1]), backgroundColor: '#17a2b8' }] } });
+        }
+
+        function exportReport(type) {
+            const data = reportsData[currentCompanyId][type === 'topclients' ? 'topclients' : (type === 'contractexpiry' ? 'contractexpiry' : type)];
+            let csvContent = '';
+            if(type === 'attendance') csvContent = 'Date,Present,Absent,Rate\n' + data.data.map(d => d.join(',')).join('\n');
+            else if(type === 'payroll') csvContent = 'Employee,Basic,Deductions,Net Pay\n' + data.employees.map(e => e.join(',')).join('\n');
+            else if(type === 'pl') csvContent = 'Revenue,Expenses,Profit\n' + [data.revenue, data.expenses, data.profit].join(',');
+            else if(type === 'vat') csvContent = 'Date,Type,Amount,VAT\n' + data.transactions.map(t => t.join(',')).join('\n');
+            else if(type === 'leave') csvContent = 'Employee,Annual,Sick,Remaining\n' + data.employees.map(e => e.join(',')).join('\n');
+            else if(type === 'payment') csvContent = 'Invoice,Client,Amount,Status\n' + data.invoices.map(i => i.join(',')).join('\n');
+            else if(type === 'topclients') csvContent = 'Rank,Client,Revenue\n' + data.map(c => c.join(',')).join('\n');
+            else if(type === 'contractexpiry') csvContent = 'Client,Contract,End Date,Days Left,Value\n' + data.map(c => c.join(',')).join('\n');
+            else if(type === 'labour') csvContent = 'Site,Workers,Supervisor,Cost\n' + data.sites.map(s => [s[0], s[1], s[2], s[4]].join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${type}_report_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            URL.revokeObjectURL(link.href);
         }
 
         function showReport(type) {
-            document.getElementById('attendanceReport').style.display = type === 'attendance' ? 'block' : 'none';
-            document.getElementById('labourReport').style.display = type === 'labour' ? 'block' : 'none';
-            document.getElementById('payrollReport').style.display = type === 'payroll' ? 'block' : 'none';
-            
-            const btns = ['tabAttendanceBtn', 'tabLabourBtn', 'tabPayrollBtn'];
-            btns.forEach(btn => { 
-                const el = document.getElementById(btn); 
-                if (el) el.style.background = '#1a4d8c'; 
-            });
-            
-            if (type === 'attendance') { 
-                document.getElementById('tabAttendanceBtn').style.background = '#0e3a6b'; 
-                generateAttendanceReport(); 
-            }
-            if (type === 'labour') { 
-                document.getElementById('tabLabourBtn').style.background = '#0e3a6b'; 
-                generateLabourReport(); 
-            }
-            if (type === 'payroll') { 
-                document.getElementById('tabPayrollBtn').style.background = '#0e3a6b'; 
-                generatePayrollReport(); 
-            }
+            currentReport = type;
+            document.querySelectorAll('[id$="Report"]').forEach(el => el.style.display = 'none');
+            document.getElementById(type + 'Report').style.display = 'block';
+            document.querySelectorAll('.report-tabs button').forEach(btn => { btn.style.background = '#e9ecef'; btn.style.color = '#333'; });
+            const activeBtn = document.getElementById('tab' + type.charAt(0).toUpperCase() + type.slice(1));
+            if(activeBtn) { activeBtn.style.background = '#1a4d8c'; activeBtn.style.color = 'white'; }
+            refreshCurrentReport();
         }
 
-        async function loadUserInfo() {
+        async function loadMenu() {
             const response = await fetch('/api/user-menu', { headers: { 'Authorization': token } });
             const data = await response.json();
             if (!data.loggedIn) { localStorage.removeItem('erp_token'); window.location.href = '/login.html'; return; }
             document.querySelector('.user-info').innerHTML = '👋 ' + data.name + ' (' + data.role.replace('_', ' ').toUpperCase() + ')';
-            const allowedPages = data.menus;
-            document.querySelectorAll('.sidebar-nav a').forEach(link => {
-                const href = link.getAttribute('href');
-                if (href && href !== '#' && !allowedPages.includes(href.replace('.html', ''))) {
-                    link.style.display = 'none';
-                }
-            });
         }
 
-        function logout() { 
-            localStorage.removeItem('erp_token'); 
-            localStorage.removeItem('erp_user'); 
-            window.location.href = '/login.html'; 
-        }
+        function logout() { localStorage.removeItem('erp_token'); localStorage.removeItem('erp_user'); window.location.href = '/login.html'; }
 
-        loadUserInfo();
+        loadMenu();
         loadCompanySelector();
         generateAttendanceReport();
     </script>
