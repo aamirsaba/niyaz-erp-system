@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HR & Payroll - Niyaz ERP</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group select, .form-group input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
+    </style>
 </head>
 <body>
     <div class="app">
@@ -21,8 +26,9 @@
                 <a href="accounting.html">💰 Accounting & VAT</a>
                 <a href="projects.html">📋 Project Management</a>
                 <a href="crm.html">🤝 CRM</a>
-		<a href="reports.html">📈 Reports</a>
+                <a href="reports.html">📈 Reports</a>
                 <a href="alerts.html">🔔 Alerts</a>
+                <a href="#" onclick="logout(); return false;" style="margin-top:30px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">🚪 Logout</a>
             </nav>
         </aside>
 
@@ -37,7 +43,6 @@
 
             <h1>👥 Human Resources & Payroll Management</h1>
 
-            <!-- HR Stats -->
             <div class="stats-grid">
                 <div class="stat-card"><h3 id="totalEmployees">0</h3><p>Total Employees</p></div>
                 <div class="stat-card"><h3 id="presentToday">0</h3><p>Present Today</p></div>
@@ -45,7 +50,6 @@
                 <div class="stat-card vat"><h3 id="monthlySalary">0</h3><p>Monthly Salary (OMR)</p></div>
             </div>
 
-            <!-- Tabs -->
             <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                 <button onclick="showTab('employees')" id="tabEmployeesBtn" style="background:#1a4d8c;">👥 Employees</button>
                 <button onclick="showTab('attendance')" id="tabAttendanceBtn">📅 Attendance</button>
@@ -55,7 +59,7 @@
                 <button onclick="showTab('deductions')" id="tabDeductionsBtn">📉 Deductions</button>
             </div>
 
-            <!-- Employees Tab -->
+            <!-- ==================== EMPLOYEES TAB ==================== -->
             <div id="employeesTab">
                 <div class="form-card">
                     <h3>➕ Add Employee</h3>
@@ -66,8 +70,8 @@
                         <input type="text" id="empHousing" placeholder="Housing Allowance">
                         <input type="text" id="empTransport" placeholder="Transport Allowance">
                         <input type="text" id="empPhone" placeholder="Phone">
-                        <input type="date" id="empJoinDate" placeholder="Join Date">
-			<input type="text" id="empWhatsApp" placeholder="WhatsApp (+968XXXXXXXX)" value="+968">
+                        <input type="date" id="empJoinDate">
+                        <input type="text" id="empWhatsApp" placeholder="WhatsApp (+968XXXXXXXX)" value="+968">
                         <select id="empBank">
                             <option>Bank Muscat</option><option>NBO</option><option>Bank Dhofar</option><option>Sohar Bank</option>
                         </select>
@@ -77,31 +81,26 @@
                 </div>
                 <div class="table-container">
                     <table id="employeesTable">
-                        <thead>
-    <tr>
-        <th>ID</th><th>Name</th><th>Position</th><th>Basic</th>
-        <th>Housing</th><th>Transport</th><th>Total</th>
-        <th>WhatsApp</th><th>Status</th><th>Actions</th>
-    </tr>
-</thead>
-
+                        <thead><tr><th>ID</th><th>Name</th><th>Position</th><th>Basic</th><th>Housing</th><th>Transport</th><th>Total</th><th>WhatsApp</th><th>Status</th><th>Actions</th></tr></thead>
                         <tbody id="employeesList"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Attendance Tab -->
+            <!-- ==================== ATTENDANCE TAB ==================== -->
             <div id="attendanceTab" style="display:none;">
                 <div class="form-card">
                     <h3>✅ Mark Attendance</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
-                        <select id="attendanceEmployee"></select>
+                        <select id="attendanceEmployee">
+                            <option value="">-- Select Employee --</option>
+                        </select>
                         <input type="date" id="attendanceDate">
                         <select id="attendanceStatus">
-                            <option>Present</option><option>Absent</option><option>Late</option><option>Half Day</option><option>Holiday</option>
+                            <option>Present</option><option>Absent</option><option>Late</option><option>Half Day</option>
                         </select>
-                        <input type="text" id="checkInTime" placeholder="Check In Time (e.g., 08:00)">
-                        <input type="text" id="checkOutTime" placeholder="Check Out Time (e.g., 17:00)">
+                        <input type="text" id="checkInTime" placeholder="Check In Time">
+                        <input type="text" id="checkOutTime" placeholder="Check Out Time">
                         <button onclick="markAttendance()">Mark Attendance</button>
                     </div>
                 </div>
@@ -113,14 +112,16 @@
                 </div>
             </div>
 
-            <!-- Leave Requests Tab -->
+            <!-- ==================== LEAVE REQUESTS TAB ==================== -->
             <div id="leavesTab" style="display:none;">
                 <div class="form-card">
                     <h3>🌴 Request Leave</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
-                        <select id="leaveEmployee"></select>
+                        <select id="leaveEmployee">
+                            <option value="">-- Select Employee --</option>
+                        </select>
                         <select id="leaveType">
-                            <option>Annual Leave</option><option>Sick Leave</option><option>Unpaid Leave</option><option>Emergency Leave</option><option>Hajj Leave</option>
+                            <option>Annual Leave</option><option>Sick Leave</option><option>Unpaid Leave</option>
                         </select>
                         <input type="date" id="leaveStart">
                         <input type="date" id="leaveEnd">
@@ -132,13 +133,12 @@
                     <table id="leavesTable">
                         <thead><tr><th>Employee</th><th>Type</th><th>Start</th><th>End</th><th>Days</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
                         <tbody id="leavesList"></tbody>
-                    </table>
+                    <tr>
                 </div>
             </div>
 
-            <!-- Payroll Tab - Complete Payroll Module -->
+            <!-- ==================== PAYROLL TAB ==================== -->
             <div id="payrollTab" style="display:none;">
-                <!-- Payroll Period Selection -->
                 <div class="form-card">
                     <h3>📅 Payroll Period</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
@@ -151,110 +151,109 @@
                             <option value="2026-06">June 2026</option>
                         </select>
                         <button onclick="calculatePayroll()">💰 Calculate Payroll</button>
-                        <button onclick="processPayroll()" style="background:#28a745;">✅ Process & Lock</button>
+                        <button onclick="processPayroll()" style="background:#28a745;">✅ Process</button>
                     </div>
                 </div>
-
-                <!-- Payroll Summary -->
-                <div class="stats-grid" id="payrollSummary" style="margin-bottom:20px;">
-                    <div class="stat-card"><h3 id="totalGrossPay">0</h3><p>Total Gross Pay (OMR)</p></div>
-                    <div class="stat-card"><h3 id="totalDeductions">0</h3><p>Total Deductions (OMR)</p></div>
-                    <div class="stat-card vat"><h3 id="totalNetPay">0</h3><p>Total Net Pay (OMR)</p></div>
-                    <div class="stat-card"><h3 id="totalEmployeesPayroll">0</h3><p>Employees Processed</p></div>
+                <div class="stats-grid">
+                    <div class="stat-card"><h3 id="totalGrossPay">0</h3><p>Total Gross Pay</p></div>
+                    <div class="stat-card"><h3 id="totalDeductions">0</h3><p>Total Deductions</p></div>
+                    <div class="stat-card vat"><h3 id="totalNetPay">0</h3><p>Total Net Pay</p></div>
                 </div>
-
-                <!-- Payroll Table -->
                 <div class="table-container">
-                    <h3>📊 Payroll Register</h3>
                     <table id="payrollTable">
-                        <thead>
-                            <tr>
-                                <th>Employee</th><th>Basic Salary</th><th>Housing</th><th>Transport</th><th>Overtime</th><th>Bonus</th>
-                                <th>Gross Pay</th><th>Absent Deduct</th><th>Leave Deduct</th><th>Social Security</th><th>Loan</th>
-                                <th>Net Pay</th><th>Bank Account</th><th>Status</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>Employee</th><th>Basic</th><th>Housing</th><th>Transport</th><th>Gross</th><th>Deductions</th><th>Net Pay</th></tr></thead>
                         <tbody id="payrollList"></tbody>
                     </table>
                 </div>
+            </div>
 
-                <!-- Payroll Actions -->
-                <div class="form-card" style="margin-top:20px;">
-                    <h3>⚙️ Payroll Actions</h3>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button onclick="exportPayroll()">📥 Export to Excel</button>
-                        <button onclick="generateBankFile()">🏦 Generate Bank Transfer File</button>
-                        <button onclick="generateAllPayslips()">📄 Generate All Payslips</button>
-                        <button onclick="sendPayslipsEmail()">✉️ Email Payslips to Employees</button>
-                    </div>
+            <!-- ==================== WHATSAPP SECTION ==================== -->
+            <div class="form-card" style="background: #d4f8e8;">
+                <h3>📱 WhatsApp Payslip Delivery</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 15px;">
+                    <button onclick="sendAllPayslipsWhatsApp()" style="background:#25D366;">📱 Send All Payslips</button>
+                    <select id="singleEmployeeWA">
+                        <option value="">-- Select Employee --</option>
+                    </select>
+                    <button onclick="sendSinglePayslipWhatsApp()" style="background:#25D366;">Send to Selected</button>
+                </div>
+                <div id="whatsappStatus" style="margin-top:15px; padding:10px; background:#f8f9fa; border-radius:8px; display:none;">
+                    <div id="whatsappLog"></div>
                 </div>
             </div>
-<!-- WhatsApp Integration Section -->
-<div class="form-card" style="margin-top:20px; background: #d4f8e8;">
-    <h3>📱 WhatsApp Payslip Delivery</h3>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 15px;">
-        <div>
-            <label>📞 Staff WhatsApp Numbers</label>
-            <small style="display:block; color:#6c757d;">Format: +968 XXXX XXXX</small>
-        </div>
-        <div>
-            <button onclick="sendAllPayslipsWhatsApp()" style="background:#25D366; width:100%;">
-                📱 Send All Payslips via WhatsApp
-            </button>
-        </div>
-        <div>
-            <select id="singleEmployeeWA">
-                <option value="">Select Employee</option>
-            </select>
-            <button onclick="sendSinglePayslipWhatsApp()" style="background:#25D366; margin-top:5px; width:100%;">
-                Send Payslip to Selected
-            </button>
-        </div>
-    </div>
-    
-    <!-- WhatsApp Status -->
-    <div id="whatsappStatus" style="margin-top:15px; padding:10px; background:#f8f9fa; border-radius:8px; display:none;">
-        <strong>📱 WhatsApp Delivery Status:</strong>
-        <div id="whatsappLog"></div>
-    </div>
-</div>
 
-            <!-- Payslips Tab -->
+            <!-- ==================== PAYSLIPS TAB ==================== -->
             <div id="payslipsTab" style="display:none;">
                 <div class="form-card">
-                    <h3>📄 Employee Payslip</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 10px;">
-                        <select id="payslipEmployee"></select>
-                        <select id="payslipMonth">
-                            <option>May 2026</option><option>April 2026</option><option>March 2026</option>
-                        </select>
-                        <button onclick="viewPayslip()">View Payslip</button>
+                    <h3>📄 Generate Employee Payslip</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 15px;">
+                        <div class="form-group">
+                            <label>👤 Select Employee:</label>
+                            <select id="payslipEmployee">
+                                <option value="">-- Select Employee --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>📅 Select Month:</label>
+                            <select id="payslipMonthSelect">
+                                <option value="2026-01">January 2026</option>
+                                <option value="2026-02">February 2026</option>
+                                <option value="2026-03">March 2026</option>
+                                <option value="2026-04">April 2026</option>
+                                <option value="2026-05" selected>May 2026</option>
+                                <option value="2026-06">June 2026</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button onclick="viewPayslip()" style="width:100%;">📄 View Payslip</button>
+                        </div>
                     </div>
                 </div>
-                <div id="payslipViewer" class="form-card" style="display:none;">
-                    <!-- Payslip will be displayed here -->
-                </div>
+                <div id="payslipViewer" class="form-card" style="display:none;"></div>
             </div>
 
-            <!-- Deductions Tab -->
+            <!-- ==================== DEDUCTIONS TAB ==================== -->
             <div id="deductionsTab" style="display:none;">
                 <div class="form-card">
-                    <h3>➕ Add Deduction/Loan</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
-                        <select id="deductionEmployee"></select>
-                        <select id="deductionType">
-                            <option>Loan</option><option>Mobile Bill</option><option>Advance</option><option>Fine</option><option>Other</option>
-                        </select>
-                        <input type="number" id="deductionAmount" placeholder="Amount (OMR)">
-                        <input type="text" id="deductionReason" placeholder="Reason">
-                        <input type="date" id="deductionDate">
-                        <button onclick="addDeduction()">Add Deduction</button>
+                    <h3>➕ Add Deduction / Loan</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 15px;">
+                        <div class="form-group">
+                            <label>👤 Select Employee:</label>
+                            <select id="deductionEmployee">
+                                <option value="">-- Select Employee --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>📌 Type:</label>
+                            <select id="deductionType">
+                                <option>Loan</option><option>Advance</option><option>Fine</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>💰 Amount (OMR):</label>
+                            <input type="number" id="deductionAmount" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>📝 Reason:</label>
+                            <input type="text" id="deductionReason" placeholder="Optional">
+                        </div>
+                        <div class="form-group">
+                            <label>📅 Date:</label>
+                            <input type="date" id="deductionDate">
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button onclick="addDeduction()" style="width:100%;">➕ Add Deduction</button>
+                        </div>
                     </div>
                 </div>
                 <div class="table-container">
-                    <h3>📋 Employee Deductions / Loans</h3>
+                    <h3>📋 Deductions & Loans List</h3>
                     <table id="deductionsTable">
-                        <thead><tr><th>Employee</th><th>Type</th><th>Amount</th><th>Reason</th><th>Date</th><th>Remaining</th><th>Status</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>Employee</th><th>Type</th><th>Amount</th><th>Reason</th><th>Date</th><th>Status</th>
+                            </tr>
+                        </thead>
                         <tbody id="deductionsList"></tbody>
                     </table>
                 </div>
@@ -263,453 +262,362 @@
     </div>
 
     <script>
-        let employees = [
-            { id: 1, name: 'Ahmed Al Balushi', position: 'HVAC Supervisor', basic: 850, housing: 200, transport: 100, phone: '91234567', joinDate: '2022-01-15', bank: 'Bank Muscat', accountNo: '01234567890123', status: 'Active' },
-            { id: 2, name: 'Salim Al Hinai', position: 'Cleaning Manager', basic: 750, housing: 150, transport: 80, phone: '92345678', joinDate: '2022-03-10', bank: 'NBO', accountNo: '02345678901234', status: 'Active' },
-            { id: 3, name: 'Mohammed Al Riyami', position: 'MEP Technician', basic: 650, housing: 120, transport: 70, phone: '93456789', joinDate: '2023-01-20', bank: 'Bank Dhofar', accountNo: '03456789012345', status: 'Active' },
-            { id: 4, name: 'Rashid Al Saadi', position: 'Security Guard', basic: 450, housing: 80, transport: 50, phone: '94567890', joinDate: '2023-06-01', bank: 'Sohar Bank', accountNo: '04567890123456', status: 'Active' },
-            { id: 5, name: 'Khalid Al Shukaili', position: 'General Labour', basic: 400, housing: 60, transport: 40, phone: '95678901', joinDate: '2024-01-10', bank: 'Bank Muscat', accountNo: '05678901234567', status: 'Active' }
-        ];
-        
-        let attendance = [];
-        let leaveRequests = [
-            { id: 1, employeeId: 1, type: 'Annual Leave', start: '2026-05-20', end: '2026-05-22', days: 3, reason: 'Family visit', status: 'Approved' },
-            { id: 2, employeeId: 3, type: 'Sick Leave', start: '2026-05-19', end: '2026-05-19', days: 1, reason: 'Flu', status: 'Pending' }
-        ];
-        
-        let deductions = [
-            { id: 1, employeeId: 1, type: 'Loan', amount: 50, reason: 'Personal loan', date: '2026-04-01', remaining: 450, status: 'Active' },
-            { id: 2, employeeId: 2, type: 'Advance', amount: 100, reason: 'Salary advance', date: '2026-05-10', remaining: 0, status: 'Completed' }
-        ];
-        
-        let payrollHistory = [];
+        const token = localStorage.getItem('erp_token');
+        if (!token) { window.location.href = '/login.html'; }
 
-        function loadCompanies() {
-            const companies = ['Niyaz International LLC', 'Niyaz Facilities Management', 'Niyaz Technical Services'];
+        // ========== COMPANY-SPECIFIC EMPLOYEE DATA ==========
+        const companyEmployeesData = {
+            1: [ // Niyaz International LLC
+                { id: 1, name: 'Ahmed Al Balushi', position: 'HVAC Supervisor', basic: 850, housing: 200, transport: 100, phone: '91234567', whatsapp: '+96891234567', bank: 'Bank Muscat', accountNo: '01234567890123', status: 'Active' },
+                { id: 2, name: 'Salim Al Hinai', position: 'Cleaning Manager', basic: 750, housing: 150, transport: 80, phone: '92345678', whatsapp: '+96892345678', bank: 'NBO', accountNo: '02345678901234', status: 'Active' },
+                { id: 3, name: 'Aamir Durrani', position: 'Manager', basic: 1000, housing: 100, transport: 100, phone: '91293119', whatsapp: '+96891293119', bank: 'Bank Muscat', accountNo: '11111', status: 'Active' }
+            ],
+            2: [ // Niyaz Facilities Management
+                { id: 1, name: 'Mohammed Al Riyami', position: 'MEP Technician', basic: 650, housing: 120, transport: 70, phone: '93456789', whatsapp: '+96893456789', bank: 'Bank Dhofar', accountNo: '03456789012345', status: 'Active' },
+                { id: 2, name: 'Yousef Al Hinai', position: 'Site Supervisor', basic: 800, housing: 150, transport: 80, phone: '94567890', whatsapp: '+96894567890', bank: 'NBO', accountNo: '04567890123456', status: 'Active' }
+            ],
+            3: [ // Niyaz Technical Services
+                { id: 1, name: 'Rashid Al Saadi', position: 'Security Guard', basic: 450, housing: 80, transport: 50, phone: '95678901', whatsapp: '+96895678901', bank: 'Sohar Bank', accountNo: '05678901234567', status: 'Active' },
+                { id: 2, name: 'Khalid Al Shukaili', position: 'General Labour', basic: 400, housing: 60, transport: 40, phone: '96789012', whatsapp: '+96896789012', bank: 'Bank Muscat', accountNo: '06789012345678', status: 'Active' },
+                { id: 3, name: 'Nasser Al Riyami', position: 'Technician', basic: 550, housing: 100, transport: 60, phone: '97890123', whatsapp: '+96897890123', bank: 'Bank Dhofar', accountNo: '07890123456789', status: 'Active' }
+            ]
+        };
+
+        let currentEmployees = [];
+        let currentCompanyId = 1;
+        let attendanceRecords = [];
+        let leaveRequests = [];
+        let deductions = [];
+
+        // ========== LOAD COMPANY SELECTOR ==========
+        function loadCompanySelector() {
+            const companies = [
+                { id: 1, name: 'Niyaz International LLC' },
+                { id: 2, name: 'Niyaz Facilities Management' },
+                { id: 3, name: 'Niyaz Technical Services' }
+            ];
             const select = document.getElementById('companySelect');
-            if(select) select.innerHTML = companies.map(c => `<option>${c}</option>`).join('');
-        }
-
-        function loadEmployees() {
-    const tbody = document.getElementById('employeesList');
-    if(!tbody) return;
-    
-    tbody.innerHTML = employees.map(e => {
-        const total = e.basic + e.housing + e.transport;
-        return `<tr>
-            <td>${e.id}</td>
-            <td><strong>${e.name}</strong></td>
-            <td>${e.position}</td>
-            <td>${e.basic}</td>
-            <td>${e.housing}</td>
-            <td>${e.transport}</td>
-            <td>${total}</td>
-            <td>${e.whatsapp || 'Not Set'}</td>
-            <td><span class="badge badge-active">${e.status}</span></td>
-            <td>
-                <button onclick="editEmployeeWhatsApp(${e.id})" style="background:#25D366; padding:5px 10px;">📱 WA</button>
-                <button onclick="deleteEmployee(${e.id})" style="background:#dc3545; padding:5px 10px;">🗑️</button>
-               </td>
-        </tr>`;
-    }).join('');
-    
-    document.getElementById('totalEmployees').textContent = employees.length;
-    const totalSalary = employees.reduce((sum, e) => sum + e.basic + e.housing + e.transport, 0);
-    document.getElementById('monthlySalary').textContent = totalSalary;
-    document.getElementById('presentToday').textContent = attendance.filter(a => a.status === 'Present').length || 4;
-    document.getElementById('onLeave').textContent = leaveRequests.filter(l => l.status === 'Approved').length || 1;
-    
-    // Populate selects
-    const selects = ['attendanceEmployee', 'leaveEmployee', 'payslipEmployee', 'deductionEmployee', 'singleEmployeeWA'];
-    selects.forEach(selectId => {
-        const select = document.getElementById(selectId);
-        if(select) {
-            if(selectId === 'singleEmployeeWA') {
-                select.innerHTML = '<option value="">Select Employee</option>' + 
-                    employees.map(e => `<option value="${e.id}">${e.name} - ${e.whatsapp || 'No WA'}</option>`).join('');
-            } else {
-                select.innerHTML = employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+            if (select) {
+                select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                select.onchange = function() {
+                    currentCompanyId = parseInt(this.value);
+                    loadCompanyData();
+                };
+                loadCompanyData();
             }
         }
-    });
-}
+
+        function loadCompanyData() {
+            currentEmployees = JSON.parse(JSON.stringify(companyEmployeesData[currentCompanyId] || companyEmployeesData[1]));
+            loadEmployeesTable();
+            updateStats();
+            refreshAllDropdowns();
+            
+            // Reset other data when company changes
+            attendanceRecords = [];
+            leaveRequests = [];
+            deductions = [];
+            loadAttendance();
+            loadLeaves();
+            loadDeductions();
+        }
+
+        function refreshAllDropdowns() {
+            const dropdownIds = ['attendanceEmployee', 'leaveEmployee', 'payslipEmployee', 'deductionEmployee', 'singleEmployeeWA'];
+            dropdownIds.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = '<option value="">-- Select Employee --</option>' + 
+                        currentEmployees.map(e => `<option value="${e.id}">${e.name} (${e.position})</option>`).join('');
+                }
+            });
+        }
+
+        function updateStats() {
+            const totalSalary = currentEmployees.reduce((sum, e) => sum + e.basic + e.housing + e.transport, 0);
+            document.getElementById('totalEmployees').textContent = currentEmployees.length;
+            document.getElementById('monthlySalary').textContent = totalSalary;
+            document.getElementById('presentToday').textContent = currentEmployees.length;
+            document.getElementById('onLeave').textContent = 0;
+        }
+
+        function loadEmployeesTable() {
+            const tbody = document.getElementById('employeesList');
+            if (!tbody) return;
+            tbody.innerHTML = currentEmployees.map(e => {
+                const total = e.basic + e.housing + e.transport;
+                return `<tr>
+                    <td>${e.id}</td>
+                    <td><strong>${e.name}</strong></td>
+                    <td>${e.position}</td>
+                    <td>${e.basic}</td>
+                    <td>${e.housing}</td>
+                    <td>${e.transport}</td>
+                    <td>${total}</td>
+                    <td>${e.whatsapp}</td>
+                    <td><span class="badge badge-active">${e.status}</span></td>
+                    <td><button onclick="editEmployee(${e.id})" style="background:#ffc107;padding:5px 10px;">✏️</button><button onclick="deleteEmployee(${e.id})" style="background:#dc3545;padding:5px 10px;">🗑️</button></td>
+                </tr>`;
+            }).join('');
+            refreshAllDropdowns();
+            updateStats();
+        }
 
         function addEmployee() {
-    const name = document.getElementById('empName').value;
-    const basic = parseFloat(document.getElementById('empBasicSalary').value);
-    const housing = parseFloat(document.getElementById('empHousing').value) || 0;
-    const transport = parseFloat(document.getElementById('empTransport').value) || 0;
-    const phone = document.getElementById('empPhone').value;
-    const whatsapp = document.getElementById('empWhatsApp').value || `+968${phone}`;
-    const joinDate = document.getElementById('empJoinDate').value;
-    const bank = document.getElementById('empBank').value;
-    const accountNo = document.getElementById('empAccountNo').value;
-    
-    if(!name || !basic) return alert('Enter name and basic salary');
-    
-    employees.push({ 
-        id: employees.length+1, 
-        name, 
-        position: document.getElementById('empPosition').value, 
-        basic, housing, transport, 
-        phone, 
-        whatsapp,
-        joinDate, 
-        bank, 
-        accountNo, 
-        status: 'Active' 
-    });
-    loadEmployees();
-    alert('Employee added!');
-}
+            const name = document.getElementById('empName').value;
+            const basic = parseFloat(document.getElementById('empBasicSalary').value);
+            if (!name || !basic) return alert('Enter name and salary');
+            const newId = currentEmployees.length + 1;
+            currentEmployees.push({
+                id: newId, name: name, basic: basic, 
+                position: document.getElementById('empPosition').value || 'Staff',
+                housing: parseFloat(document.getElementById('empHousing').value) || 0,
+                transport: parseFloat(document.getElementById('empTransport').value) || 0,
+                phone: document.getElementById('empPhone').value || '',
+                whatsapp: document.getElementById('empWhatsApp').value || '+968XXXXXXXX',
+                bank: document.getElementById('empBank').value,
+                accountNo: document.getElementById('empAccountNo').value || 'XXXXXXXXXX',
+                status: 'Active'
+            });
+            loadEmployeesTable();
+            alert('Employee added!');
+            document.getElementById('empName').value = '';
+            document.getElementById('empBasicSalary').value = '';
+        }
 
-        function deleteEmployee(id) {
-            if(confirm('Delete this employee?')) {
-                employees = employees.filter(e => e.id !== id);
-                loadEmployees();
-            }
+        function editEmployee(id) { 
+            const emp = currentEmployees.find(e => e.id === id); 
+            if(emp) { 
+                const newSal = prompt('Edit Basic Salary:', emp.basic); 
+                if(newSal) emp.basic = parseFloat(newSal); 
+                loadEmployeesTable(); 
+            } 
+        }
+        
+        function deleteEmployee(id) { 
+            if(confirm('Delete this employee?')) { 
+                currentEmployees = currentEmployees.filter(e => e.id !== id); 
+                loadEmployeesTable(); 
+            } 
         }
 
         function markAttendance() {
             const empId = document.getElementById('attendanceEmployee').value;
-            const date = document.getElementById('attendanceDate').value || new Date().toISOString().split('T')[0];
-            const status = document.getElementById('attendanceStatus').value;
-            const checkIn = document.getElementById('checkInTime').value;
-            const checkOut = document.getElementById('checkOutTime').value;
-            const employee = employees.find(e => e.id == empId);
-            attendance.push({ employee: employee.name, date, checkIn, checkOut, status });
+            const emp = currentEmployees.find(e => e.id == empId);
+            if(!emp) return alert('Select employee');
+            attendanceRecords.push({ employee: emp.name, date: new Date().toISOString().split('T')[0], status: document.getElementById('attendanceStatus').value });
             loadAttendance();
             alert('Attendance marked!');
         }
-
+        
         function loadAttendance() {
             const tbody = document.getElementById('attendanceList');
-            if(tbody) tbody.innerHTML = attendance.map(a => `<tr><td>${a.employee}</td><td>${a.date}</td><td>${a.checkIn || '-'}</td><td>${a.checkOut || '-'}</td><td>${a.status}</td></tr>`).join('');
+            if(tbody) tbody.innerHTML = attendanceRecords.map(a => `<tr>
+                <td>${a.employee}</td>
+                <td>${a.date}</td>
+                <td>${a.checkIn || '-'}</td>
+                <td>${a.checkOut || '-'}</td>
+                <td>${a.status}</td>
+            </tr>`).join('');
         }
 
         function requestLeave() {
             const empId = document.getElementById('leaveEmployee').value;
-            const type = document.getElementById('leaveType').value;
+            const emp = currentEmployees.find(e => e.id == empId);
+            if(!emp) return alert('Select employee');
             const start = document.getElementById('leaveStart').value;
             const end = document.getElementById('leaveEnd').value;
-            const reason = document.getElementById('leaveReason').value;
-            const days = Math.ceil((new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24)) + 1;
-            const employee = employees.find(e => e.id == empId);
-            leaveRequests.push({ id: leaveRequests.length+1, employeeId: parseInt(empId), employee: employee.name, type, start, end, days, reason, status: 'Pending' });
+            const days = Math.ceil((new Date(end) - new Date(start)) / (1000*60*60*24)) + 1;
+            leaveRequests.push({ 
+                id: leaveRequests.length+1, 
+                employee: emp.name, 
+                type: document.getElementById('leaveType').value, 
+                start: start, 
+                end: end, 
+                days: days,
+                reason: document.getElementById('leaveReason').value, 
+                status: 'Pending' 
+            });
             loadLeaves();
             alert('Leave request submitted!');
         }
-
+        
         function loadLeaves() {
             const tbody = document.getElementById('leavesList');
-            if(tbody) tbody.innerHTML = leaveRequests.map(l => {
-                const emp = employees.find(e => e.id === l.employeeId);
-                return `<tr>
-                    <td>${emp ? emp.name : l.employee}</td><td>${l.type}</td><td>${l.start}</td><td>${l.end}</td><td>${l.days}</td>
-                    <td>${l.reason}</td><td><span class="badge badge-pending">${l.status}</span></td>
-                    <td><button onclick="approveLeave(${l.id})" style="background:#28a745; padding:5px 10px;">Approve</button></td>
-                </tr>`;
-            }).join('');
+            if(tbody) tbody.innerHTML = leaveRequests.map(l => `<tr>
+                <td>${l.employee}</td>
+                <td>${l.type}</td>
+                <td>${l.start}</td>
+                <td>${l.end}</td>
+                <td>${l.days || 1}</td>
+                <td>${l.reason}</td>
+                <td><span class="badge badge-pending">${l.status}</span></td>
+                <td><button onclick="approveLeave(${l.id})" style="background:#28a745;">Approve</button></td>
+            </tr>`).join('');
+        }
+        
+        function approveLeave(id) { 
+            const l = leaveRequests.find(l => l.id === id); 
+            if(l) l.status = 'Approved'; 
+            loadLeaves(); 
         }
 
-        function approveLeave(id) {
-            const leave = leaveRequests.find(l => l.id === id);
-            if(leave) leave.status = 'Approved';
-            loadLeaves();
-        }
-
-        // Complete Payroll Calculation
         function calculatePayroll() {
-            const month = document.getElementById('payrollMonth').value;
-            const yearMonth = month.split('-');
-            const year = yearMonth[0];
-            const monthNum = yearMonth[1];
-            
             const tbody = document.getElementById('payrollList');
-            let totalGross = 0, totalDeductions = 0, totalNet = 0;
-            
-            tbody.innerHTML = employees.map(e => {
-                // Calculate basic package
-                const basic = e.basic;
-                const housing = e.housing;
-                const transport = e.transport;
-                const grossPay = basic + housing + transport;
-                
-                // Calculate attendance deductions
-                const absentDays = attendance.filter(a => a.employee === e.name && a.status === 'Absent').length;
-                const absentDeduction = (basic / 30) * absentDays;
-                
-                // Calculate leave deductions (unpaid leaves only)
-                const unpaidLeaves = leaveRequests.filter(l => l.employeeId === e.id && l.type === 'Unpaid Leave' && l.status === 'Approved');
-                const leaveDeduction = unpaidLeaves.reduce((sum, l) => sum + ((basic / 30) * l.days), 0);
-                
-                // Social Security (Oman: 10.5% of basic - 7% employee, 3.5% employer)
-                const socialSecurity = basic * 0.07;
-                
-                // Other deductions (loans, etc)
-                const otherDeductions = deductions.filter(d => d.employeeId === e.id && d.status === 'Active').reduce((sum, d) => sum + d.amount, 0);
-                
-                const totalDeduction = absentDeduction + leaveDeduction + socialSecurity + otherDeductions;
-                const netPay = grossPay - totalDeduction;
-                
-                totalGross += grossPay;
-                totalDeductions += totalDeduction;
-                totalNet += netPay;
-                
+            let totalGross = 0, totalNet = 0;
+            tbody.innerHTML = currentEmployees.map(e => {
+                const gross = e.basic + e.housing + e.transport;
+                const deductionsAmt = e.basic * 0.07;
+                const net = gross - deductionsAmt;
+                totalGross += gross; totalNet += net;
                 return `<tr>
-                    <td>${e.name}</td><td>${basic}</td><td>${housing}</td><td>${transport}</td>
-                    <td>0</td><td>0</td>
-                    <td><strong>${grossPay}</strong></td>
-                    <td>${absentDeduction.toFixed(2)}</td><td>${leaveDeduction.toFixed(2)}</td>
-                    <td>${socialSecurity.toFixed(2)}</td><td>${otherDeductions.toFixed(2)}</td>
-                    <td><strong style="color:#28a745;">${netPay.toFixed(2)}</strong></td>
-                    <td>${e.accountNo}</td>
-                    <td><span class="badge badge-pending">Pending</span></td>
+                    <td>${e.name}</td>
+                    <td>${e.basic}</td>
+                    <td>${e.housing}</td>
+                    <td>${e.transport}</td>
+                    <td><strong>${gross}</strong></td>
+                    <td>${deductionsAmt.toFixed(2)}</td>
+                    <td style="color:#28a745;">${net.toFixed(2)}</td>
                 </tr>`;
             }).join('');
-            
-            document.getElementById('totalGrossPay').textContent = totalGross.toFixed(2);
-            document.getElementById('totalDeductions').textContent = totalDeductions.toFixed(2);
+            document.getElementById('totalGrossPay').textContent = totalGross;
+            document.getElementById('totalDeductions').textContent = (totalGross * 0.07).toFixed(2);
             document.getElementById('totalNetPay').textContent = totalNet.toFixed(2);
-            document.getElementById('totalEmployeesPayroll').textContent = employees.length;
         }
-
-        function processPayroll() {
-            const month = document.getElementById('payrollMonth').value;
-            const period = month.split('-')[1] + '/' + month.split('-')[0];
-            payrollHistory.push({ period, date: new Date().toISOString(), total: document.getElementById('totalNetPay').textContent });
-            alert(`✅ Payroll for ${period} processed and locked!\nTotal Net Pay: ${document.getElementById('totalNetPay').textContent} OMR\nBank transfer file ready.`);
-            
-            // Update status to Processed
-            const rows = document.querySelectorAll('#payrollList tr');
-            rows.forEach(row => {
-                const lastCell = row.cells[row.cells.length-1];
-                if(lastCell) lastCell.innerHTML = '<span class="badge badge-active">Processed</span>';
-            });
-        }
-
-        function exportPayroll() {
-            alert('📥 Payroll exported to Excel!\nFile: Payroll_May2026.xlsx');
-        }
-
-        function generateBankFile() {
-            alert('🏦 Bank transfer file generated!\nFormat: WPS (Wage Protection System)\nTotal amount: ' + document.getElementById('totalNetPay').textContent + ' OMR');
-        }
-
-        function generateAllPayslips() {
-            alert('📄 All payslips generated!\nCheck the Payslips tab to view individual payslips.');
-        }
-
-        function sendPayslipsEmail() {
-            alert('✉️ Payslips sent to all employees!\nEmails sent to registered email addresses.');
-        }
+        
+        function processPayroll() { alert('✅ Payroll processed!'); }
 
         function viewPayslip() {
             const empId = document.getElementById('payslipEmployee').value;
-            const month = document.getElementById('payslipMonth').value;
-            const employee = employees.find(e => e.id == empId);
-            const basic = employee.basic;
-            const totalPay = basic + employee.housing + employee.transport;
-            const deductions = (basic * 0.07) + 25; // Social Security + sample loan
+            const month = document.getElementById('payslipMonthSelect').value;
+            const employee = currentEmployees.find(e => e.id == empId);
+            
+            if (!employee) {
+                alert('Please select an employee');
+                return;
+            }
+            
+            const monthNames = {
+                '2026-01': 'January 2026', '2026-02': 'February 2026', '2026-03': 'March 2026',
+                '2026-04': 'April 2026', '2026-05': 'May 2026', '2026-06': 'June 2026'
+            };
+            const monthDisplay = monthNames[month] || month;
+            
+            const gross = employee.basic + employee.housing + employee.transport;
+            const deductionsAmt = employee.basic * 0.07;
+            const net = gross - deductionsAmt;
             
             const viewer = document.getElementById('payslipViewer');
             viewer.style.display = 'block';
             viewer.innerHTML = `
                 <div style="border:1px solid #ddd; padding:20px; border-radius:8px;">
                     <div style="text-align:center; margin-bottom:20px;">
-                        <img src="niyaz_logo.png" style="height:50px;">
+                        <img src="niyaz_logo.png" style="height:60px;">
                         <h2>Niyaz International LLC</h2>
-                        <p>Payslip for ${month}</p>
+                        <p>Payslip for ${monthDisplay}</p>
                     </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                         <p><strong>Employee:</strong> ${employee.name}</p>
                         <p><strong>Position:</strong> ${employee.position}</p>
                         <p><strong>Basic Salary:</strong> ${employee.basic} OMR</p>
-                        <p><strong>Housing Allowance:</strong> ${employee.housing} OMR</p>
-                        <p><strong>Transport Allowance:</strong> ${employee.transport} OMR</p>
-                        <p><strong>Gross Pay:</strong> ${totalPay} OMR</p>
-                        <p><strong>Social Security (7%):</strong> ${(employee.basic * 0.07).toFixed(2)} OMR</p>
-                        <p><strong>Other Deductions:</strong> 25.00 OMR</p>
-                        <p><strong style="color:#28a745;">Net Pay:</strong> ${(totalPay - (employee.basic * 0.07) - 25).toFixed(2)} OMR</p>
+                        <p><strong>Housing:</strong> ${employee.housing} OMR</p>
+                        <p><strong>Transport:</strong> ${employee.transport} OMR</p>
+                        <p><strong>Gross Pay:</strong> ${gross} OMR</p>
+                        <p><strong>Social Security (7%):</strong> ${deductionsAmt.toFixed(2)} OMR</p>
+                        <p><strong style="color:#28a745;">Net Pay:</strong> ${net.toFixed(2)} OMR</p>
                         <p><strong>Bank:</strong> ${employee.bank}</p>
                         <p><strong>Account:</strong> ${employee.accountNo}</p>
                     </div>
-                    <hr>
-                    <p style="text-align:center; font-size:12px;">This is a computer-generated payslip. No signature required.</p>
                 </div>
             `;
         }
 
-        function addDeduction() {
-            const empId = document.getElementById('deductionEmployee').value;
-            const type = document.getElementById('deductionType').value;
-            const amount = parseFloat(document.getElementById('deductionAmount').value);
-            const reason = document.getElementById('deductionReason').value;
-            const date = document.getElementById('deductionDate').value;
-            if(!amount) return alert('Enter amount');
-            deductions.push({ id: deductions.length+1, employeeId: parseInt(empId), type, amount, reason, date, remaining: amount, status: 'Active' });
-            loadDeductions();
-            alert('Deduction added!');
-        }
-
-        function loadDeductions() {
-            const tbody = document.getElementById('deductionsList');
-            if(tbody) tbody.innerHTML = deductions.map(d => {
-                const emp = employees.find(e => e.id === d.employeeId);
-                return `<tr><td>${emp ? emp.name : 'Unknown'}</td><td>${d.type}</td><td>${d.amount}</td><td>${d.reason}</td><td>${d.date}</td><td>${d.remaining}</td><td><span class="badge badge-active">${d.status}</span></td></tr>`;
-            }).join('');
-        }
-
-// Store employee WhatsApp numbers (extend employee array)
-// Add WhatsApp field to existing employees
-// Add WhatsApp numbers to existing employees
-employees = employees.map(emp => ({
-    ...emp,
-    whatsapp: emp.whatsapp || getDefaultWhatsApp(emp.phone)
-}));
-function getDefaultWhatsApp(phone) {
-    // Convert Omani phone number to international format
-    if(phone && phone.length === 8) {
-        return `+968${phone}`;
-    }
-    return '+968XXXXXXXX';
-}
-
-
-// BEST WORKING VERSION FOR OMAN - Uses WhatsApp Web
-async function sendSinglePayslipWhatsApp() {
-    const empId = document.getElementById('singleEmployeeWA').value;
-    if(!empId) {
-        alert('Please select an employee');
-        return;
-    }
-    
-    const employee = employees.find(e => e.id == empId);
-    if(!employee) return;
-    
-    const month = document.getElementById('payrollMonth').value;
-    const basic = employee.basic;
-    const housing = employee.housing;
-    const transport = employee.transport;
-    const grossPay = basic + housing + transport;
-    
-    const absentDays = attendance.filter(a => a.employee === employee.name && a.status === 'Absent').length;
-    const absentDeduction = (basic / 30) * absentDays;
-    const socialSecurity = basic * 0.07;
-    const otherDeductions = deductions.filter(d => d.employeeId === employee.id && d.status === 'Active').reduce((sum, d) => sum + d.amount, 0);
-    const totalDeduction = absentDeduction + socialSecurity + otherDeductions;
-    const netPay = grossPay - totalDeduction;
-    
-    const payslipText = `🏢 *NIYAZ INTERNATIONAL LLC*
-📄 *PAYSLIP - ${month}*
+        async function sendSinglePayslipWhatsApp() {
+            const empId = document.getElementById('singleEmployeeWA').value;
+            if (!empId) { alert('Please select an employee'); return; }
+            const employee = currentEmployees.find(e => e.id == parseInt(empId));
+            if (!employee) return;
+            
+            const month = document.getElementById('payrollMonth').value;
+            const monthNames = {'2026-01':'January','2026-02':'February','2026-03':'March','2026-04':'April','2026-05':'May','2026-06':'June'};
+            const monthDisplay = monthNames[month] || month;
+            
+            const gross = employee.basic + employee.housing + employee.transport;
+            const deductionsAmt = employee.basic * 0.07;
+            const net = gross - deductionsAmt;
+            
+            const text = `🏢 *NIYAZ INTERNATIONAL LLC*
+📄 *PAYSLIP - ${monthDisplay} 2026*
 
 👤 Employee: ${employee.name}
 📌 Position: ${employee.position}
 
-💰 *Salary Details:*
-Basic Salary: ${basic} OMR
-Housing Allowance: ${housing} OMR
-Transport Allowance: ${transport} OMR
+💰 Basic: ${employee.basic} OMR
+🏠 Housing: ${employee.housing} OMR
+🚗 Transport: ${employee.transport} OMR
 ─────────────────
-Gross Pay: ${grossPay} OMR
-
-📉 *Deductions:*
-Absent Days (${absentDays}): ${absentDeduction.toFixed(2)} OMR
-Social Security (7%): ${socialSecurity.toFixed(2)} OMR
-Other Deductions: ${otherDeductions.toFixed(2)} OMR
+Gross Pay: ${gross} OMR
+Social Security (7%): ${deductionsAmt.toFixed(2)} OMR
 ─────────────────
-Total Deductions: ${totalDeduction.toFixed(2)} OMR
-
-✅ *NET PAY: ${netPay.toFixed(2)} OMR*
+✅ *NET PAY: ${net.toFixed(2)} OMR*
 
 🏦 Bank: ${employee.bank}
 Account: ${employee.accountNo}
 
-*Thank you for your service!*
-${new Date().toLocaleDateString()}`;
-    
-    // Encode for WhatsApp
-    const encodedText = encodeURIComponent(payslipText);
-    // Use web.whatsapp.com which works great in Oman
-    const whatsappUrl = `https://web.whatsapp.com/send?phone=${employee.whatsapp}&text=${encodedText}`;
-    
-    // Open WhatsApp Web
-    window.open(whatsappUrl, '_blank');
-    
-    // Log to status
-    const logDiv = document.getElementById('whatsappLog');
-    const statusDiv = document.getElementById('whatsappStatus');
-    if(statusDiv) {
-        statusDiv.style.display = 'block';
-        logDiv.innerHTML += `<div style="margin:5px 0;">📱 Opening WhatsApp Web for ${employee.name}</div>`;
-    }
-    
-    alert(`📱 WhatsApp Web opened for ${employee.name}\n\n1. Scan QR code if needed\n2. Click Send to deliver payslip`);
-}
+*Thank you for your service!*`;
+            
+            const encodedText = encodeURIComponent(text);
+            window.open(`https://web.whatsapp.com/send?phone=${employee.whatsapp}&text=${encodedText}`, '_blank');
+        }
 
-// Send payslips to ALL employees via WhatsApp Web
-async function sendAllPayslipsWhatsApp() {
-    const confirmed = confirm(`⚠️ This will open WhatsApp Web for ALL ${employees.length} employees one by one.\n\nYou will need to click "Send" for each employee.\n\nContinue?`);
-    
-    if(!confirmed) return;
-    
-    const month = document.getElementById('payrollMonth').value;
-    const logDiv = document.getElementById('whatsappLog');
-    const statusDiv = document.getElementById('whatsappStatus');
-    statusDiv.style.display = 'block';
-    logDiv.innerHTML = '<strong>Starting WhatsApp delivery...</strong><br>';
-    
-    for(let i = 0; i < employees.length; i++) {
-        const employee = employees[i];
-        
-        // Skip if no WhatsApp number
-        if(!employee.whatsapp || employee.whatsapp === '+968') {
-            logDiv.innerHTML += `<div style="margin:5px 0; color:red;">⚠️ ${employee.name}: No WhatsApp number set. Skipping.</div>`;
-            continue;
+        async function sendAllPayslipsWhatsApp() {
+            if (currentEmployees.length === 0) return alert('No employees');
+            for (let i = 0; i < currentEmployees.length; i++) {
+                const e = currentEmployees[i];
+                const gross = e.basic + e.housing + e.transport;
+                const net = gross - (e.basic * 0.07);
+                const text = `🏢 NIYAZ INTERNATIONAL LLC\nPayslip for ${e.name}\nNet Pay: ${net.toFixed(2)} OMR`;
+                window.open(`https://web.whatsapp.com/send?phone=${e.whatsapp}&text=${encodeURIComponent(text)}`, '_blank');
+                await new Promise(r => setTimeout(r, 2000));
+            }
+        }
+
+        function addDeduction() {
+            const empId = document.getElementById('deductionEmployee').value;
+            const amount = document.getElementById('deductionAmount').value;
+            if (!empId || !amount) { alert('Select employee and enter amount'); return; }
+            const employee = currentEmployees.find(e => e.id == empId);
+            deductions.push({
+                id: deductions.length+1, 
+                employeeId: parseInt(empId), 
+                employeeName: employee.name,
+                type: document.getElementById('deductionType').value,
+                amount: parseFloat(amount),
+                reason: document.getElementById('deductionReason').value || 'No reason',
+                date: document.getElementById('deductionDate').value || new Date().toISOString().split('T')[0],
+                status: 'Active'
+            });
+            loadDeductions();
+            alert('Deduction added!');
+            document.getElementById('deductionAmount').value = '';
         }
         
-        const basic = employee.basic;
-        const housing = employee.housing;
-        const transport = employee.transport;
-        const grossPay = basic + housing + transport;
-        
-        const absentDays = attendance.filter(a => a.employee === employee.name && a.status === 'Absent').length;
-        const absentDeduction = (basic / 30) * absentDays;
-        const socialSecurity = basic * 0.07;
-        const otherDeductions = deductions.filter(d => d.employeeId === employee.id && d.status === 'Active').reduce((sum, d) => sum + d.amount, 0);
-        const totalDeduction = absentDeduction + socialSecurity + otherDeductions;
-        const netPay = grossPay - totalDeduction;
-        
-        const payslipText = `🏢 *NIYAZ INTERNATIONAL LLC*
-📄 *PAYSLIP - ${month}*
-
-👤 Employee: ${employee.name}
-💰 Basic: ${basic} OMR
-🏠 Housing: ${housing} OMR
-🚗 Transport: ${transport} OMR
-─────────────────
-Gross Pay: ${grossPay} OMR
-Deductions: ${totalDeduction.toFixed(2)} OMR
-
-✅ *NET PAY: ${netPay.toFixed(2)} OMR*
-
-Thank you for your service!`;
-        
-        const encodedText = encodeURIComponent(payslipText);
-        const whatsappUrl = `https://web.whatsapp.com/send?phone=${employee.whatsapp}&text=${encodedText}`;
-        
-        // Open WhatsApp Web for each employee
-        window.open(whatsappUrl, '_blank');
-        
-        logDiv.innerHTML += `<div style="margin:5px 0;">📱 ${i+1}/${employees.length}: Opening WhatsApp for ${employee.name}</div>`;
-        
-        // Wait 3 seconds before next to avoid overwhelming browser
-        await new Promise(resolve => setTimeout(resolve, 3000));
-    }
-    
-    logDiv.innerHTML += `<br><strong>✅ WhatsApp Web opened for all employees! Click Send for each tab.</strong>`;
-}
-
+        function loadDeductions() {
+            const tbody = document.getElementById('deductionsList');
+            if (!tbody) return;
+            if (deductions.length === 0) { 
+                tbody.innerHTML = '<td><td colspan="6" style="text-align:center;">No deductions found</td></tr>'; 
+                return; 
+            }
+            tbody.innerHTML = deductions.map(d => `<tr>
+                <td>${d.employeeName}</td>
+                <td>${d.type}</td>
+                <td>${d.amount}</td>
+                <td>${d.reason}</td>
+                <td>${d.date}</td>
+                <td><span class="badge badge-active">${d.status}</span></td>
+            </tr>`).join('');
+        }
 
         function showTab(tab) {
             document.getElementById('employeesTab').style.display = tab === 'employees' ? 'block' : 'none';
@@ -721,40 +629,41 @@ Thank you for your service!`;
             
             const btns = ['tabEmployeesBtn','tabAttendanceBtn','tabLeavesBtn','tabPayrollBtn','tabPayslipsBtn','tabDeductionsBtn'];
             btns.forEach(btn => { const el = document.getElementById(btn); if(el) el.style.background = '#1a4d8c'; });
-            if(tab === 'employees') document.getElementById('tabEmployeesBtn').style.background = '#0e3a6b';
-            if(tab === 'attendance') document.getElementById('tabAttendanceBtn').style.background = '#0e3a6b';
-            if(tab === 'leaves') document.getElementById('tabLeavesBtn').style.background = '#0e3a6b';
-            if(tab === 'payroll') document.getElementById('tabPayrollBtn').style.background = '#0e3a6b';
-            if(tab === 'payslips') document.getElementById('tabPayslipsBtn').style.background = '#0e3a6b';
-            if(tab === 'deductions') document.getElementById('tabDeductionsBtn').style.background = '#0e3a6b';
             
-            if(tab === 'attendance') loadAttendance();
-            if(tab === 'leaves') loadLeaves();
-            if(tab === 'deductions') loadDeductions();
+            if(tab === 'employees') { document.getElementById('tabEmployeesBtn').style.background = '#0e3a6b'; loadEmployeesTable(); }
+            if(tab === 'attendance') { document.getElementById('tabAttendanceBtn').style.background = '#0e3a6b'; loadAttendance(); }
+            if(tab === 'leaves') { document.getElementById('tabLeavesBtn').style.background = '#0e3a6b'; loadLeaves(); }
+            if(tab === 'payroll') { document.getElementById('tabPayrollBtn').style.background = '#0e3a6b'; calculatePayroll(); }
+            if(tab === 'payslips') { document.getElementById('tabPayslipsBtn').style.background = '#0e3a6b'; refreshAllDropdowns(); }
+            if(tab === 'deductions') { document.getElementById('tabDeductionsBtn').style.background = '#0e3a6b'; refreshAllDropdowns(); loadDeductions(); }
         }
-	
 
-// Edit employee WhatsApp number
-function editEmployeeWhatsApp(empId) {
-    const employee = employees.find(e => e.id === empId);
-    if(employee) {
-        const currentNumber = employee.whatsapp || '+968';
-        const newNumber = prompt(`📱 Edit WhatsApp Number for ${employee.name}\n\nCurrent: ${currentNumber}\n\nEnter number with country code:\nExample: +96891234567`, currentNumber);
-        
-        if(newNumber && newNumber.length >= 10) {
-            employee.whatsapp = newNumber;
-            loadEmployees(); // Refresh the table
-            alert(`✅ WhatsApp number updated for ${employee.name}\nNew number: ${newNumber}`);
-        } else if(newNumber) {
-            alert('⚠️ Please enter a valid number with country code\nExample: +96891234567');
+        async function loadMenu() {
+            const response = await fetch('/api/user-menu', { headers: { 'Authorization': token } });
+            const data = await response.json();
+            if (!data.loggedIn) { localStorage.removeItem('erp_token'); window.location.href = '/login.html'; return; }
+            document.querySelector('.user-info').innerHTML = '👋 ' + data.name + ' (' + data.role.replace('_', ' ').toUpperCase() + ')';
+            
+            // Filter menu based on role
+            const allowedPages = data.menus;
+            const menuLinks = document.querySelectorAll('.sidebar-nav a');
+            menuLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (!href || href === '#') return;
+                const pageName = href.replace('.html', '');
+                if (pageName === 'logout') return;
+                if (!allowedPages.includes(pageName) && pageName !== '') {
+                    link.style.display = 'none';
+                } else {
+                    link.style.display = 'flex';
+                }
+            });
         }
-    }
-}
-        
-	loadCompanies();
-        loadEmployees();
-        loadDeductions();
 
+        function logout() { localStorage.removeItem('erp_token'); localStorage.removeItem('erp_user'); window.location.href = '/login.html'; }
+
+        loadMenu();
+        loadCompanySelector();
     </script>
 </body>
 </html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Niyaz ERP</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        
+        .logo {
+            margin-bottom: 30px;
+        }
+        
+        .logo img {
+            height: 60px;
+            margin-bottom: 10px;
+        }
+        
+        .logo h2 {
+            color: #1a1a2e;
+            font-size: 1.5rem;
+        }
+        
+        .logo p {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #1a1a2e;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #1a4d8c;
+            box-shadow: 0 0 0 3px rgba(26, 77, 140, 0.1);
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #1a4d8c;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #0e3a6b;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #dc3545;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            display: none;
+        }
+        
+        .demo-credentials {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: left;
+        }
+        
+        .demo-credentials h4 {
+            color: #1a1a2e;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .demo-credentials p {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin: 5px 0;
+        }
+        
+        .demo-credentials strong {
+            color: #1a4d8c;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo">
+                <img src="niyaz_logo.png" alt="Niyaz International" onerror="this.style.display='none'">
+                <h2>Niyaz Group ERP</h2>
+                <p>Facility Management System</p>
+            </div>
+            
+            <div id="errorMessage" class="error-message"></div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>📧 Email Address</label>
+                    <input type="email" id="email" placeholder="admin@niyaz.com" required>
+                </div>
+                <div class="form-group">
+                    <label>🔒 Password</label>
+                    <input type="password" id="password" placeholder="••••••" required>
+                </div>
+                <button type="submit">🔐 Login to Dashboard</button>
+            </form>
+            
+            <div class="demo-credentials">
+                <h4>📋 Demo Credentials</h4>
+                <p><strong>Admin:</strong> admin@niyaz.com / admin123 <span style="color:#28a745;">(Full Access)</span></p>
+                <p><strong>HR Manager:</strong> hr@niyaz.com / hr123 <span style="color:#17a2b8;">(HR Only)</span></p>
+                <p><strong>Finance:</strong> finance@niyaz.com / finance123 <span style="color:#17a2b8;">(Finance Only)</span></p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Clear any existing tokens on login page
+        localStorage.removeItem('erp_token');
+        localStorage.removeItem('erp_user');
+        
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
+            const loginBtn = document.querySelector('button[type="submit"]');
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = '⏳ Logging in...';
+            errorDiv.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('erp_token', data.token);
+                    localStorage.setItem('erp_user', JSON.stringify(data.user));
+                    window.location.href = '/';
+                } else {
+                    errorDiv.textContent = data.message || 'Invalid credentials';
+                    errorDiv.style.display = 'block';
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = '🔐 Login to Dashboard';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorDiv.textContent = 'Connection error. Please make sure the server is running.';
+                errorDiv.style.display = 'block';
+                loginBtn.disabled = false;
+                loginBtn.textContent = '🔐 Login to Dashboard';
+            }
+        });
+    </script>
+</body>
+</html>

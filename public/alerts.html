@@ -21,8 +21,9 @@
                 <a href="accounting.html">💰 Accounting & VAT</a>
                 <a href="projects.html">📋 Project Management</a>
                 <a href="crm.html">🤝 CRM</a>
-		<a href="reports.html">📈 Reports</a>
+                <a href="reports.html">📈 Reports</a>
                 <a href="alerts.html">🔔 Alerts</a>
+                <a href="#" onclick="logout(); return false;" style="margin-top:30px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">🚪 Logout</a>
             </nav>
         </aside>
 
@@ -37,15 +38,13 @@
 
             <h1>🔔 Alerts & Notifications</h1>
 
-            <!-- Alert Stats -->
             <div class="stats-grid">
-                <div class="stat-card"><h3 id="unreadCount">8</h3><p>Unread Alerts</p></div>
-                <div class="stat-card"><h3 id="highPriority">3</h3><p>High Priority</p></div>
-                <div class="stat-card"><h3 id="expiringToday">2</h3><p>Expiring Today</p></div>
-                <div class="stat-card vat"><h3 id="overdueTasks">1</h3><p>Overdue Tasks</p></div>
+                <div class="stat-card"><h3 id="unreadCount">0</h3><p>Unread Alerts</p></div>
+                <div class="stat-card"><h3 id="highPriority">0</h3><p>High Priority</p></div>
+                <div class="stat-card"><h3 id="expiringToday">0</h3><p>Expiring Today</p></div>
+                <div class="stat-card vat"><h3 id="overdueTasks">0</h3><p>Overdue Tasks</p></div>
             </div>
 
-            <!-- Alert Filters -->
             <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                 <button onclick="filterAlerts('all')" id="filterAll" style="background:#1a4d8c;">📋 All</button>
                 <button onclick="filterAlerts('warning')" id="filterWarning">⚠️ Warnings</button>
@@ -55,112 +54,142 @@
                 <button onclick="markAllRead()" style="background:#28a745;">✓ Mark All Read</button>
             </div>
 
-            <!-- Alerts List -->
             <div id="alertsContainer"></div>
 
-            <!-- Notification Settings -->
             <div class="form-card" style="margin-top: 30px;">
                 <h3>⚙️ Notification Settings</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 15px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 15px;">
                     <label><input type="checkbox" id="emailNotif" checked> 📧 Email Notifications</label>
-                    <label><input type="checkbox" id="smsNotif"> 📱 SMS Alerts</label>
                     <label><input type="checkbox" id="browserNotif" checked> 🔔 Browser Notifications</label>
-                    <label><input type="checkbox" id="dailyDigest"> 📊 Daily Digest Email</label>
                 </div>
                 <button onclick="saveSettings()" style="margin-top:15px;">Save Settings</button>
-            </div>
-
-            <!-- Alert Rules -->
-            <div class="form-card">
-                <h3>➕ Create Custom Alert Rule</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
-                    <select id="ruleModule">
-                        <option>HR - Absent 3 days</option><option>Project - Task Overdue</option><option>Contract - Expiring Soon</option><option>VAT - Filing Reminder</option>
-                    </select>
-                    <select id="rulePriority">
-                        <option>High</option><option>Medium</option><option>Low</option>
-                    </select>
-                    <button onclick="createRule()">Create Rule</button>
-                </div>
             </div>
         </main>
     </div>
 
     <script>
-        let alerts = [
-            { id: 1, type: 'danger', title: 'Worker Absent', message: 'Ahmed Al Balushi has been absent for 3 consecutive days', date: '2026-05-18', read: false },
-            { id: 2, type: 'warning', title: 'Contract Expiring', message: 'Al Mouj Group contract renews in 5 days', date: '2026-05-23', read: false },
-            { id: 3, type: 'warning', title: 'VAT Deadline', message: 'VAT return filing due on June 10, 2026', date: '2026-06-10', read: false },
-            { id: 4, type: 'info', title: 'Project Update', message: 'Al Mouj Tower FM project is 45% complete', date: '2026-05-18', read: false },
-            { id: 5, type: 'success', title: 'Payment Received', message: 'Oman Air payment of 18,500 OMR received', date: '2026-05-17', read: true },
-            { id: 6, type: 'danger', title: 'Task Overdue', message: 'Equipment Installation task is overdue by 2 days', date: '2026-05-16', read: false },
-            { id: 7, type: 'warning', title: 'Employee Leave', message: '3 employees requested leave next week', date: '2026-05-20', read: false },
-            { id: 8, type: 'info', title: 'New Lead', message: 'New lead from Oman Oil - potential value 250,000 OMR', date: '2026-05-17', read: false }
-        ];
+        const token = localStorage.getItem('erp_token');
+        if (!token) { window.location.href = '/login.html'; }
 
+        // Company-specific alerts data
+        const companyAlerts = {
+            1: [ // Niyaz International LLC
+                { id: 1, type: 'warning', title: 'Contract Renewal', message: 'Al Mouj Tower contract renews in 5 days', date: '2026-05-23', read: false },
+                { id: 2, type: 'info', title: 'VAT Deadline', message: 'VAT return filing due June 10', date: '2026-06-10', read: false },
+                { id: 3, type: 'danger', title: 'Worker Absent', message: 'Ahmed Al Balushi absent for 3 days', date: '2026-05-18', read: false },
+                { id: 4, type: 'success', title: 'Payment Received', message: 'Oman Air payment of 18,500 OMR received', date: '2026-05-17', read: true },
+                { id: 5, type: 'warning', title: 'Equipment Maintenance', message: 'HVAC system needs servicing', date: '2026-05-25', read: false }
+            ],
+            2: [ // Niyaz Facilities Management
+                { id: 1, type: 'warning', title: 'Site Inspection', message: 'City Centre Mall inspection due', date: '2026-05-22', read: false },
+                { id: 2, type: 'info', title: 'Staff Training', message: 'Safety training scheduled for May 25', date: '2026-05-25', read: false },
+                { id: 3, type: 'success', title: 'Contract Renewed', message: 'Cleaning contract extended', date: '2026-05-16', read: true }
+            ],
+            3: [ // Niyaz Technical Services
+                { id: 1, type: 'danger', title: 'Security Issue', message: 'Access control system needs update', date: '2026-05-20', read: false },
+                { id: 2, type: 'info', title: 'New Project', message: 'Airport security project approved', date: '2026-05-19', read: false }
+            ]
+        };
+
+        let currentAlerts = [];
         let currentFilter = 'all';
 
-        function loadCompanies() {
-            const companies = ['Niyaz International LLC', 'Niyaz Facilities Management', 'Niyaz Technical Services'];
+        function loadCompanySelector() {
+            const companies = [
+                { id: 1, name: 'Niyaz International LLC' },
+                { id: 2, name: 'Niyaz Facilities Management' },
+                { id: 3, name: 'Niyaz Technical Services' }
+            ];
             const select = document.getElementById('companySelect');
-            if(select) select.innerHTML = companies.map(c => `<option>${c}</option>`).join('');
+            if (select) {
+                select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                select.onchange = function() {
+                    loadCompanyAlerts(parseInt(this.value));
+                };
+            }
+        }
+
+        function loadCompanyAlerts(companyId) {
+            currentAlerts = companyAlerts[companyId] || companyAlerts[1];
+            loadAlerts();
         }
 
         function loadAlerts() {
-            let filtered = alerts;
-            if(currentFilter !== 'all') {
-                filtered = alerts.filter(a => a.type === currentFilter);
+            let filtered = currentAlerts;
+            if (currentFilter !== 'all') {
+                filtered = currentAlerts.filter(a => a.type === currentFilter);
             }
             
             const container = document.getElementById('alertsContainer');
-            container.innerHTML = filtered.map(a => `
-                <div class="alert alert-${a.type}" style="display: flex; justify-content: space-between; align-items: center; ${!a.read ? 'font-weight: bold;' : ''}">
-                    <div>
-                        <strong>${a.title}</strong><br>
-                        <small>${a.message}</small><br>
-                        <small style="color: #6c757d;">📅 ${a.date}</small>
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">📭 No alerts found for this company</div>';
+            } else {
+                container.innerHTML = filtered.map(a => `
+                    <div class="alert alert-${a.type}" style="display:flex; justify-content:space-between; align-items:center; ${!a.read ? 'background:#f8f9fa; font-weight:bold;' : ''}">
+                        <div style="flex:1;">
+                            <strong>${a.title}</strong><br>
+                            <small>${a.message}</small><br>
+                            <small style="color:#6c757d;">📅 ${a.date}</small>
+                        </div>
+                        <div>
+                            ${!a.read ? `<button onclick="markRead(${a.id})" style="background:#28a745; padding:5px 10px; margin-right:5px;">✓ Read</button>` : '<span class="badge badge-active">Read</span>'}
+                            <button onclick="deleteAlert(${a.id})" style="background:#dc3545; padding:5px 10px;">🗑️</button>
+                        </div>
                     </div>
-                    <div>
-                        ${!a.read ? `<button onclick="markRead(${a.id})" style="background:#28a745; padding:5px 10px; margin-right:5px;">✓ Mark Read</button>` : '<span class="badge badge-active">Read</span>'}
-                        <button onclick="deleteAlert(${a.id})" style="background:#dc3545; padding:5px 10px;">🗑️</button>
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
             
-            document.getElementById('unreadCount').textContent = alerts.filter(a => !a.read).length;
-            document.getElementById('highPriority').textContent = alerts.filter(a => a.type === 'danger' || a.type === 'warning').length;
-            document.getElementById('expiringToday').textContent = '2';
-            document.getElementById('overdueTasks').textContent = '1';
+            // Update stats
+            const unreadCount = currentAlerts.filter(a => !a.read).length;
+            const highPriority = currentAlerts.filter(a => a.type === 'danger' || a.type === 'warning').length;
+            const expiringToday = currentAlerts.filter(a => a.type === 'warning' && a.title.includes('Renewal')).length;
+            const overdueTasks = currentAlerts.filter(a => a.type === 'danger').length;
+            
+            document.getElementById('unreadCount').textContent = unreadCount;
+            document.getElementById('highPriority').textContent = highPriority;
+            document.getElementById('expiringToday').textContent = expiringToday || 1;
+            document.getElementById('overdueTasks').textContent = overdueTasks || 1;
         }
 
         function markRead(id) {
-            const alert = alerts.find(a => a.id === id);
-            if(alert) alert.read = true;
-            loadAlerts();
+            const alert = currentAlerts.find(a => a.id === id);
+            if (alert) {
+                alert.read = true;
+                loadAlerts();
+            }
         }
 
         function deleteAlert(id) {
-            alerts = alerts.filter(a => a.id !== id);
-            loadAlerts();
+            if (confirm('Delete this alert?')) {
+                currentAlerts = currentAlerts.filter(a => a.id !== id);
+                // Also update the main companyAlerts
+                const companyId = document.getElementById('companySelect').value;
+                companyAlerts[companyId] = currentAlerts;
+                loadAlerts();
+            }
         }
 
         function markAllRead() {
-            alerts.forEach(a => a.read = true);
+            currentAlerts.forEach(a => a.read = true);
+            const companyId = document.getElementById('companySelect').value;
+            companyAlerts[companyId] = currentAlerts;
             loadAlerts();
-            alert('All alerts marked as read!');
+            alert('✅ All alerts marked as read!');
         }
 
         function filterAlerts(type) {
             currentFilter = type;
+            const btns = ['filterAll', 'filterWarning', 'filterDanger', 'filterInfo', 'filterSuccess'];
+            btns.forEach(btn => { 
+                const el = document.getElementById(btn); 
+                if (el) el.style.background = '#1a4d8c'; 
+            });
             
-            const btns = ['filterAll','filterWarning','filterDanger','filterInfo','filterSuccess'];
-            btns.forEach(btn => { const el = document.getElementById(btn); if(el) el.style.background = '#1a4d8c'; });
-            
-            if(type === 'all') document.getElementById('filterAll').style.background = '#0e3a6b';
-            if(type === 'warning') document.getElementById('filterWarning').style.background = '#0e3a6b';
-            if(type === 'danger') document.getElementById('filterDanger').style.background = '#0e3a6b';
-            if(type === 'info') document.getElementById('filterInfo').style.background = '#0e3a6b';
-            if(type === 'success') document.getElementById('filterSuccess').style.background = '#0e3a6b';
+            if (type === 'all') document.getElementById('filterAll').style.background = '#0e3a6b';
+            if (type === 'warning') document.getElementById('filterWarning').style.background = '#0e3a6b';
+            if (type === 'danger') document.getElementById('filterDanger').style.background = '#0e3a6b';
+            if (type === 'info') document.getElementById('filterInfo').style.background = '#0e3a6b';
+            if (type === 'success') document.getElementById('filterSuccess').style.background = '#0e3a6b';
             
             loadAlerts();
         }
@@ -168,34 +197,65 @@
         function saveSettings() {
             const settings = {
                 email: document.getElementById('emailNotif').checked,
-                sms: document.getElementById('smsNotif').checked,
-                browser: document.getElementById('browserNotif').checked,
-                digest: document.getElementById('dailyDigest').checked
+                browser: document.getElementById('browserNotif').checked
             };
             localStorage.setItem('alertSettings', JSON.stringify(settings));
-            alert('Settings saved!');
-        }
-
-        function createRule() {
-            const module = document.getElementById('ruleModule').value;
-            const priority = document.getElementById('rulePriority').value;
-            alert(`Alert rule created!\nModule: ${module}\nPriority: ${priority}\nYou will receive notifications when conditions are met.`);
+            alert('⚙️ Settings saved!');
         }
 
         function loadSettings() {
             const saved = localStorage.getItem('alertSettings');
-            if(saved) {
+            if (saved) {
                 const settings = JSON.parse(saved);
                 document.getElementById('emailNotif').checked = settings.email;
-                document.getElementById('smsNotif').checked = settings.sms;
                 document.getElementById('browserNotif').checked = settings.browser;
-                document.getElementById('dailyDigest').checked = settings.digest;
             }
         }
 
-        loadCompanies();
-        loadAlerts();
+        async function loadUserInfo() {
+            const response = await fetch('/api/user-menu', { headers: { 'Authorization': token } });
+            const data = await response.json();
+            if (!data.loggedIn) { localStorage.removeItem('erp_token'); window.location.href = '/login.html'; return; }
+            document.querySelector('.user-info').innerHTML = '👋 ' + data.name + ' (' + data.role.replace('_', ' ').toUpperCase() + ')';
+            const allowedPages = data.menus;
+            document.querySelectorAll('.sidebar-nav a').forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href !== '#' && !allowedPages.includes(href.replace('.html',''))) link.style.display = 'none';
+            });
+        }
+
+        function logout() { localStorage.removeItem('erp_token'); localStorage.removeItem('erp_user'); window.location.href = '/login.html'; }
+
+        loadUserInfo();
+        loadCompanySelector();
+        loadCompanyAlerts(1);
         loadSettings();
+    
+        // ========== ROLE-BASED MENU FILTERING ==========
+        async function filterMenuByRole() {
+            try {
+                const token = localStorage.getItem("erp_token");
+                if (!token) return;
+                const response = await fetch("/api/user-menu", { headers: { "Authorization": token } });
+                const data = await response.json();
+                if (!data.loggedIn) return;
+                const allowedPages = data.menus;
+                console.log("Role:", data.role, "Allowed:", allowedPages);
+                const menuLinks = document.querySelectorAll(".sidebar-nav a");
+                menuLinks.forEach(link => {
+                    const href = link.getAttribute("href");
+                    if (!href || href === "#") return;
+                    const pageName = href.replace(".html", "");
+                    if (pageName === "logout") return;
+                    if (!allowedPages.includes(pageName) && pageName !== "") {
+                        link.style.display = "none";
+                    } else {
+                        link.style.display = "flex";
+                    }
+                });
+            } catch(e) { console.error(e); }
+        }
+        filterMenuByRole();
     </script>
 </body>
 </html>

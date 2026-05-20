@@ -21,8 +21,9 @@
                 <a href="accounting.html">💰 Accounting & VAT</a>
                 <a href="projects.html">📋 Project Management</a>
                 <a href="crm.html">🤝 CRM</a>
-		<a href="reports.html">📈 Reports</a>
+                <a href="reports.html">📈 Reports</a>
                 <a href="alerts.html">🔔 Alerts</a>
+                <a href="#" onclick="logout(); return false;" style="margin-top:30px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">🚪 Logout</a>
             </nav>
         </aside>
 
@@ -39,38 +40,21 @@
             
             <div class="form-card">
                 <h3>➕ Add New Company</h3>
-                <div class="form-group">
-                    <label>Company Name</label>
-                    <input type="text" id="companyName" placeholder="e.g., Niyaz International LLC">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
+                    <input type="text" id="compName" placeholder="Company Name">
+                    <input type="text" id="compVat" placeholder="VAT Number">
+                    <input type="text" id="compTin" placeholder="TIN Number">
+                    <input type="text" id="compAddress" placeholder="Address">
+                    <input type="text" id="compPhone" placeholder="Phone">
+                    <button onclick="addCompany()">➕ Create Company</button>
                 </div>
-                <div class="form-group">
-                    <label>VAT Registration Number</label>
-                    <input type="text" id="vatNumber" placeholder="e.g., OM1234567">
-                </div>
-                <div class="form-group">
-                    <label>Tax Identification Number</label>
-                    <input type="text" id="tinNumber" placeholder="e.g., 123456789">
-                </div>
-                <div class="form-group">
-                    <label>Address</label>
-                    <input type="text" id="address" placeholder="Muscat, Oman">
-                </div>
-                <div class="form-group">
-                    <label>Phone</label>
-                    <input type="text" id="phone" placeholder="+968 XXXX XXXX">
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="email" placeholder="info@niyaz.com">
-                </div>
-                <button onclick="addCompany()">➕ Create Company</button>
             </div>
 
             <div class="table-container">
                 <h3>📋 Group Companies</h3>
                 <table id="companiesTable">
                     <thead>
-                        <tr><th>ID</th><th>Company Name</th><th>VAT Number</th><th>TIN</th><th>Status</th><th>Action</th></tr>
+                        <tr><th>ID</th><th>Company Name</th><th>VAT Number</th><th>TIN</th><th>Phone</th><th>Status</th><th>Action</th></tr>
                     </thead>
                     <tbody id="companiesList"></tbody>
                 </table>
@@ -79,63 +63,111 @@
     </div>
 
     <script>
+        const token = localStorage.getItem('erp_token');
+        if (!token) { window.location.href = '/login.html'; }
+
         let companies = [
-            { id: 1, name: 'Niyaz International LLC', vat: 'OM1234567', tin: '123456789', address: 'Muscat', phone: '+968 91234567', email: 'info@niyaz.com', status: 'Active' },
-            { id: 2, name: 'Niyaz Facilities Management', vat: 'OM2345678', tin: '234567890', address: 'Seeb', phone: '+968 92345678', email: 'fm@niyaz.com', status: 'Active' },
-            { id: 3, name: 'Niyaz Technical Services', vat: 'OM3456789', tin: '345678901', address: 'Al Khuwair', phone: '+968 93456789', email: 'tech@niyaz.com', status: 'Active' }
+            { id: 1, name: 'Niyaz International LLC', vat: 'OM1234567', tin: '123456789', address: 'Muscat', phone: '+968 91234567', status: 'Active' },
+            { id: 2, name: 'Niyaz Facilities Management', vat: 'OM2345678', tin: '234567890', address: 'Seeb', phone: '+968 92345678', status: 'Active' },
+            { id: 3, name: 'Niyaz Technical Services', vat: 'OM3456789', tin: '345678901', address: 'Al Khuwair', phone: '+968 93456789', status: 'Active' }
         ];
 
         function loadCompanies() {
             const tbody = document.getElementById('companiesList');
-            tbody.innerHTML = companies.map(c => `
-                <tr>
-                    <td>${c.id}</td>
-                    <td><strong>${c.name}</strong></td>
-                    <td>${c.vat}</td>
-                    <td>${c.tin}</td>
-                    <td><span class="badge badge-active">${c.status}</span></td>
-                    <td><button onclick="deleteCompany(${c.id})" style="background:#dc3545; padding:5px 10px;">Delete</button></td>
-                </tr>
-            `).join('');
+            if(!tbody) return;
             
-            const select = document.getElementById('companySelect');
-            if(select) {
-                select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            }
+            tbody.innerHTML = companies.map(c => `<tr>
+                <td>${c.id}</td>
+                <td><strong>${c.name}</strong></td>
+                <td>${c.vat}</td>
+                <td>${c.tin}</td>
+                <td>${c.phone}</td>
+                <td><span class="badge badge-active">${c.status}</span></td>
+                <td><button onclick="deleteCompany(${c.id})" style="background:#dc3545;padding:5px 10px;">🗑️</button></td>
+            </tr>`).join('');
         }
 
         function addCompany() {
-            const name = document.getElementById('companyName').value;
-            const vat = document.getElementById('vatNumber').value;
-            const tin = document.getElementById('tinNumber').value;
-            const address = document.getElementById('address').value;
-            const phone = document.getElementById('phone').value;
-            const email = document.getElementById('email').value;
+            const name = document.getElementById('compName').value;
+            if(!name) return alert('Enter company name');
             
-            if(!name) { alert('Enter company name'); return; }
-            
-            const newId = companies.length + 1;
-            companies.push({ id: newId, name, vat, tin, address, phone, email, status: 'Active' });
+            companies.push({
+                id: companies.length + 1,
+                name: name,
+                vat: document.getElementById('compVat').value || 'OMXXXXXXX',
+                tin: document.getElementById('compTin').value || 'XXXXXXXXX',
+                address: document.getElementById('compAddress').value || 'Oman',
+                phone: document.getElementById('compPhone').value || '+968 XXXXXXXX',
+                status: 'Active'
+            });
             loadCompanies();
+            alert('Company added!');
             
-            document.getElementById('companyName').value = '';
-            document.getElementById('vatNumber').value = '';
-            document.getElementById('tinNumber').value = '';
-            document.getElementById('address').value = '';
-            document.getElementById('phone').value = '';
-            document.getElementById('email').value = '';
-            
-            alert(`✅ ${name} added successfully!`);
+            document.getElementById('compName').value = '';
+            document.getElementById('compVat').value = '';
+            document.getElementById('compTin').value = '';
+            document.getElementById('compAddress').value = '';
+            document.getElementById('compPhone').value = '';
         }
 
         function deleteCompany(id) {
             if(confirm('Delete this company?')) {
                 companies = companies.filter(c => c.id !== id);
                 loadCompanies();
+                alert('Company deleted!');
             }
         }
 
+        function loadCompanySelect() {
+            const select = document.getElementById('companySelect');
+            if(select) {
+                select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            }
+        }
+
+        async function loadUserInfo() {
+            const response = await fetch('/api/user-menu', { headers: { 'Authorization': token } });
+            const data = await response.json();
+            if (!data.loggedIn) { localStorage.removeItem('erp_token'); window.location.href = '/login.html'; return; }
+            document.querySelector('.user-info').innerHTML = '👋 ' + data.name + ' (' + data.role.replace('_', ' ').toUpperCase() + ')';
+            const allowedPages = data.menus;
+            document.querySelectorAll('.sidebar-nav a').forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href !== '#' && !allowedPages.includes(href.replace('.html',''))) link.style.display = 'none';
+            });
+        }
+
+        function logout() { localStorage.removeItem('erp_token'); localStorage.removeItem('erp_user'); window.location.href = '/login.html'; }
+
+        loadUserInfo();
         loadCompanies();
+        loadCompanySelect();
+    
+        // ========== ROLE-BASED MENU FILTERING ==========
+        async function filterMenuByRole() {
+            try {
+                const token = localStorage.getItem("erp_token");
+                if (!token) return;
+                const response = await fetch("/api/user-menu", { headers: { "Authorization": token } });
+                const data = await response.json();
+                if (!data.loggedIn) return;
+                const allowedPages = data.menus;
+                console.log("Role:", data.role, "Allowed:", allowedPages);
+                const menuLinks = document.querySelectorAll(".sidebar-nav a");
+                menuLinks.forEach(link => {
+                    const href = link.getAttribute("href");
+                    if (!href || href === "#") return;
+                    const pageName = href.replace(".html", "");
+                    if (pageName === "logout") return;
+                    if (!allowedPages.includes(pageName) && pageName !== "") {
+                        link.style.display = "none";
+                    } else {
+                        link.style.display = "flex";
+                    }
+                });
+            } catch(e) { console.error(e); }
+        }
+        filterMenuByRole();
     </script>
 </body>
 </html>

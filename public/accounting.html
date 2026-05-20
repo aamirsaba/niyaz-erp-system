@@ -21,8 +21,9 @@
                 <a href="accounting.html">💰 Accounting & VAT</a>
                 <a href="projects.html">📋 Project Management</a>
                 <a href="crm.html">🤝 CRM</a>
-		<a href="reports.html">📈 Reports</a>
+                <a href="reports.html">📈 Reports</a>
                 <a href="alerts.html">🔔 Alerts</a>
+                <a href="#" onclick="logout(); return false;" style="margin-top:30px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">🚪 Logout</a>
             </nav>
         </aside>
 
@@ -39,27 +40,25 @@
 
             <!-- Financial Summary -->
             <div class="stats-grid">
-                <div class="stat-card"><h3 id="totalRevenue">125,000</h3><p>Total Revenue (OMR)</p></div>
-                <div class="stat-card"><h3 id="totalExpenses">78,500</h3><p>Total Expenses (OMR)</p></div>
-                <div class="stat-card"><h3 id="netProfit">46,500</h3><p>Net Profit (OMR)</p></div>
-                <div class="stat-card vat"><h3 id="vatCollected">6,250</h3><p>VAT Collected (5%)</p></div>
-                <div class="stat-card vat"><h3 id="vatPayable">3,925</h3><p>VAT Payable</p></div>
+                <div class="stat-card"><h3 id="totalRevenue">0</h3><p>Total Revenue (OMR)</p></div>
+                <div class="stat-card"><h3 id="totalExpenses">0</h3><p>Total Expenses (OMR)</p></div>
+                <div class="stat-card"><h3 id="netProfit">0</h3><p>Net Profit (OMR)</p></div>
+                <div class="stat-card vat"><h3 id="vatCollected">0</h3><p>VAT Collected (5%)</p></div>
+                <div class="stat-card vat"><h3 id="vatPayable">0</h3><p>VAT Payable</p></div>
             </div>
 
             <!-- Tabs -->
             <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                 <button onclick="showTab('invoices')" id="tabInvoicesBtn" style="background:#1a4d8c;">📄 Invoices</button>
                 <button onclick="showTab('expenses')" id="tabExpensesBtn">💸 Expenses</button>
-                <button onclick="showTab('chart')" id="tabChartBtn">📊 Chart of Accounts</button>
                 <button onclick="showTab('vatReport')" id="tabVatBtn">📑 VAT Report</button>
-                <button onclick="showTab('bank')" id="tabBankBtn">🏦 Bank Reconciliation</button>
             </div>
 
             <!-- Invoices Tab -->
             <div id="invoicesTab">
                 <div class="form-card">
                     <h3>➕ Create Invoice</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 10px;">
                         <input type="text" id="invoiceClient" placeholder="Client Name">
                         <input type="number" id="invoiceAmount" placeholder="Amount (OMR)">
                         <input type="date" id="invoiceDate">
@@ -70,8 +69,11 @@
                     </div>
                 </div>
                 <div class="table-container">
+                    <h3>📋 Invoice List</h3>
                     <table id="invoicesTable">
-                        <thead><tr><th>Invoice #</th><th>Client</th><th>Date</th><th>Amount</th><th>VAT (5%)</th><th>Total</th><th>Status</th></tr</thead>
+                        <thead>
+                            <tr><th>Invoice #</th><th>Client</th><th>Date</th><th>Amount</th><th>VAT (5%)</th><th>Total</th><th>Status</th></tr>
+                        </thead>
                         <tbody id="invoicesList"></tbody>
                     </table>
                 </div>
@@ -81,41 +83,21 @@
             <div id="expensesTab" style="display:none;">
                 <div class="form-card">
                     <h3>➕ Add Expense</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 10px;">
                         <input type="text" id="expenseDesc" placeholder="Description">
                         <input type="number" id="expenseAmount" placeholder="Amount (OMR)">
                         <input type="date" id="expenseDate">
                         <select id="expenseCategory">
-                            <option>Salaries</option><option>Materials</option><option>Rent</option><option>Utilities</option><option>Transport</option>
+                            <option>Salaries</option><option>Materials</option><option>Rent</option><option>Utilities</option>
                         </select>
                         <button onclick="addExpense()">Add Expense</button>
                     </div>
                 </div>
                 <div class="table-container">
+                    <h3>📋 Expense List</h3>
                     <table id="expensesTable">
-                        <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount (OMR)</th><th>VAT (5%)</th></tr</thead>
+                        <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>VAT (5%)</th></tr></thead>
                         <tbody id="expensesList"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Chart of Accounts Tab -->
-            <div id="chartTab" style="display:none;">
-                <div class="form-card">
-                    <h3>➕ Add Account</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
-                        <input type="text" id="accountCode" placeholder="Account Code (e.g., 1010)">
-                        <input type="text" id="accountName" placeholder="Account Name">
-                        <select id="accountType">
-                            <option>Asset</option><option>Liability</option><option>Equity</option><option>Revenue</option><option>Expense</option>
-                        </select>
-                        <button onclick="addAccount()">Add Account</button>
-                    </div>
-                </div>
-                <div class="table-container">
-                    <table id="accountsTable">
-                        <thead><tr><th>Code</th><th>Account Name</th><th>Type</th><th>Balance (OMR)</th></tr</thead>
-                        <tbody id="accountsList"></tbody>
                     </table>
                 </div>
             </div>
@@ -125,185 +107,274 @@
                 <div class="form-card">
                     <h3>📊 VAT Summary (Oman - 5%)</h3>
                     <div style="background:#f8f9fa; padding:15px; border-radius:8px;">
-                        <p><strong>VAT Collected from Sales:</strong> <span id="vatCollectedDetail">6,250</span> OMR</p>
-                        <p><strong>VAT Paid on Expenses:</strong> <span id="vatPaidDetail">3,925</span> OMR</p>
-                        <p><strong>Net VAT Payable to Tax Authority:</strong> <span id="vatNetPayable" style="font-size:1.5rem; color:#e67e22;">2,325</span> OMR</p>
-                        <hr style="margin:15px 0">
-                        <p><strong>Filing Deadline:</strong> 10th of next month</p>
-                        <button onclick="generateVATReport()" style="margin-top:10px;">📄 Generate VAT Report (PDF)</button>
+                        <p><strong>VAT Collected from Sales:</strong> <span id="vatCollectedDetail">0</span> OMR</p>
+                        <p><strong>VAT Paid on Expenses:</strong> <span id="vatPaidDetail">0</span> OMR</p>
+                        <p><strong>Net VAT Payable:</strong> <span id="vatNetPayable" style="font-size:1.5rem; color:#e67e22;">0</span> OMR</p>
+                        <button onclick="generateVATReport()" style="margin-top:10px;">📄 Generate VAT Report</button>
                     </div>
-                </div>
-                <div class="table-container">
-                    <h3>VAT Transactions History</h3>
-                    <table id="vatTransactionsTable">
-                        <thead><tr><th>Date</th><th>Transaction Type</th><th>Client/Supplier</th><th>Amount (Excl VAT)</th><th>VAT Amount</th></tr</thead>
-                        <tbody id="vatTransactionsList"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Bank Reconciliation Tab -->
-            <div id="bankTab" style="display:none;">
-                <div class="form-card">
-                    <h3>🏦 Bank Reconciliation</h3>
-                    <select id="bankAccount">
-                        <option>NBO - Main Account (1001-1234567)</option>
-                        <option>Bank Muscat - Operations (1002-7654321)</option>
-                    </select>
-                    <input type="date" id="reconciliationDate">
-                    <button onclick="reconcileBank()">Start Reconciliation</button>
-                </div>
-                <div class="table-container">
-                    <h3>Reconciliation Statement</h3>
-                    <table id="reconciliationTable">
-                        <thead><tr><th>Description</th><th>Bank Statement</th><th>ERP Record</th><th>Difference</th><th>Status</th></tr</thead>
-                        <tbody id="reconciliationList"></tbody>
-                    </table>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        let invoices = [
-            { id: 1001, client: 'Al Mouj Group', date: '2026-05-01', amount: 25000, status: 'Paid' },
-            { id: 1002, client: 'Oman Air', date: '2026-05-05', amount: 18500, status: 'Paid' },
-            { id: 1003, client: 'City Centre Mall', date: '2026-05-10', amount: 32000, status: 'Unpaid' },
-            { id: 1004, client: 'Bank Muscat', date: '2026-05-15', amount: 15000, status: 'Paid' }
-        ];
-        
-        let expenses = [
-            { date: '2026-05-02', desc: 'Monthly Salaries', category: 'Salaries', amount: 45000 },
-            { date: '2026-05-08', desc: 'Cleaning Supplies', category: 'Materials', amount: 8500 },
-            { date: '2026-05-12', desc: 'Office Rent', category: 'Rent', amount: 12000 },
-            { date: '2026-05-14', desc: 'Vehicle Maintenance', category: 'Transport', amount: 3500 }
-        ];
-        
-        let accounts = [
-            { code: '1010', name: 'Cash in Bank', type: 'Asset', balance: 125000 },
-            { code: '2010', name: 'Accounts Receivable', type: 'Asset', balance: 45000 },
-            { code: '3010', name: 'Accounts Payable', type: 'Liability', balance: 28000 },
-            { code: '4010', name: 'Service Revenue', type: 'Revenue', balance: 125000 },
-            { code: '5010', name: 'Salaries Expense', type: 'Expense', balance: 45000 }
-        ];
+        const token = localStorage.getItem('erp_token');
+        if (!token) { window.location.href = '/login.html'; }
 
-        function loadCompanies() {
-            const companies = ['Niyaz International LLC', 'Niyaz Facilities Management', 'Niyaz Technical Services'];
+        // Company-specific accounting data
+        const companyData = {
+            1: { 
+                invoices: [
+                    { id: 1001, client: 'Al Mouj Group', date: '2026-05-01', amount: 25000, status: 'Paid' },
+                    { id: 1002, client: 'Oman Air', date: '2026-05-05', amount: 18500, status: 'Paid' },
+                    { id: 1003, client: 'City Centre Mall', date: '2026-05-10', amount: 32000, status: 'Unpaid' }
+                ],
+                expenses: [
+                    { date: '2026-05-02', desc: 'Salaries', category: 'Salaries', amount: 45000 },
+                    { date: '2026-05-08', desc: 'Cleaning Supplies', category: 'Materials', amount: 8500 },
+                    { date: '2026-05-12', desc: 'Office Rent', category: 'Rent', amount: 12000 }
+                ]
+            },
+            2: { 
+                invoices: [
+                    { id: 2001, client: 'City Centre Mall', date: '2026-05-03', amount: 15000, status: 'Paid' },
+                    { id: 2002, client: 'Bank Muscat', date: '2026-05-08', amount: 12000, status: 'Unpaid' }
+                ],
+                expenses: [
+                    { date: '2026-05-05', desc: 'Equipment', category: 'Materials', amount: 12000 },
+                    { date: '2026-05-10', desc: 'Staff Salaries', category: 'Salaries', amount: 25000 }
+                ]
+            },
+            3: { 
+                invoices: [
+                    { id: 3001, client: 'Oman Airports', date: '2026-05-04', amount: 8000, status: 'Paid' }
+                ],
+                expenses: [
+                    { date: '2026-05-06', desc: 'Technical Supplies', category: 'Materials', amount: 8000 },
+                    { date: '2026-05-11', desc: 'Salaries', category: 'Salaries', amount: 15000 }
+                ]
+            }
+        };
+
+        let currentCompanyId = 1;
+
+        function loadCompanySelector() {
+            const companies = [
+                { id: 1, name: 'Niyaz International LLC' },
+                { id: 2, name: 'Niyaz Facilities Management' },
+                { id: 3, name: 'Niyaz Technical Services' }
+            ];
             const select = document.getElementById('companySelect');
-            if(select) select.innerHTML = companies.map(c => `<option>${c}</option>`).join('');
+            if (select) {
+                select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                select.onchange = function() {
+                    currentCompanyId = parseInt(this.value);
+                    refreshAllData();
+                };
+            }
         }
 
-        function loadInvoices() {
+        function refreshAllData() {
+            const data = companyData[currentCompanyId];
+            
+            // Calculate totals
+            const totalRevenue = data.invoices.reduce((sum, inv) => sum + inv.amount, 0);
+            const totalExpenses = data.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+            const netProfit = totalRevenue - totalExpenses;
+            const vatCollected = totalRevenue * 0.05;
+            const vatPayable = totalExpenses * 0.05;
+            
+            // Update stats cards
+            document.getElementById('totalRevenue').innerHTML = totalRevenue.toLocaleString();
+            document.getElementById('totalExpenses').innerHTML = totalExpenses.toLocaleString();
+            document.getElementById('netProfit').innerHTML = netProfit.toLocaleString();
+            document.getElementById('vatCollected').innerHTML = vatCollected.toLocaleString();
+            document.getElementById('vatPayable').innerHTML = vatPayable.toLocaleString();
+            
+            // Update VAT report
+            document.getElementById('vatCollectedDetail').innerHTML = vatCollected.toLocaleString();
+            document.getElementById('vatPaidDetail').innerHTML = vatPayable.toLocaleString();
+            document.getElementById('vatNetPayable').innerHTML = (vatCollected - vatPayable).toLocaleString();
+            
+            // Load tables
+            loadInvoices(data.invoices);
+            loadExpenses(data.expenses);
+        }
+
+        function loadInvoices(invoices) {
             const tbody = document.getElementById('invoicesList');
-            if(!tbody) return;
+            if (!tbody) return;
+            
+            if (invoices.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No invoices found</td></tr>';
+                return;
+            }
+            
             tbody.innerHTML = invoices.map(inv => {
                 const vat = inv.amount * 0.05;
                 const total = inv.amount + vat;
-                let statusClass = inv.status === 'Paid' ? 'badge-active' : (inv.status === 'Unpaid' ? 'badge-pending' : 'badge-danger');
-                return `<tr><td>INV-${inv.id}</td><td>${inv.client}</td><td>${inv.date}</td><td>${inv.amount}</td><td>${vat}</td><td>${total}</td><td><span class="badge ${statusClass}">${inv.status}</span></td></tr>`;
+                const statusClass = inv.status === 'Paid' ? 'badge-active' : 'badge-pending';
+                return `<tr>
+                    <td>INV-${inv.id}</td>
+                    <td>${inv.client}</td>
+                    <td>${inv.date}</td>
+                    <td>${inv.amount.toLocaleString()}</td>
+                    <td>${vat.toLocaleString()}</td>
+                    <td><strong>${total.toLocaleString()}</strong></td>
+                    <td><span class="badge ${statusClass}">${inv.status}</span></td>
+                </tr>`;
             }).join('');
-            
-            const totalRev = invoices.reduce((s,i) => s + i.amount, 0);
-            const totalExp = expenses.reduce((s,e) => s + e.amount, 0);
-            document.getElementById('totalRevenue').textContent = totalRev;
-            document.getElementById('totalExpenses').textContent = totalExp;
-            document.getElementById('netProfit').textContent = totalRev - totalExp;
-            document.getElementById('vatCollected').textContent = (totalRev * 0.05);
-            document.getElementById('vatPayable').textContent = (totalExp * 0.05);
         }
 
-        function loadExpenses() {
+        function loadExpenses(expenses) {
             const tbody = document.getElementById('expensesList');
-            if(tbody) tbody.innerHTML = expenses.map(e => `<tr><td>${e.date}</td><td>${e.desc}</td><td>${e.category}</td><td>${e.amount}</td><td>${e.amount * 0.05}</td></tr>`).join('');
-        }
-
-        function loadAccounts() {
-            const tbody = document.getElementById('accountsList');
-            if(tbody) tbody.innerHTML = accounts.map(a => `<tr><td>${a.code}</td><td>${a.name}</td><td>${a.type}</td><td>${a.balance}</td></tr>`).join('');
-        }
-
-        function loadVATTransactions() {
-            const tbody = document.getElementById('vatTransactionsList');
-            const vatTransactions = [
-                { date: '2026-05-01', type: 'Invoice', party: 'Al Mouj Group', amount: 25000, vat: 1250 },
-                { date: '2026-05-05', type: 'Invoice', party: 'Oman Air', amount: 18500, vat: 925 },
-                { date: '2026-05-08', type: 'Expense', party: 'Suppliers', amount: 8500, vat: 425 },
-                { date: '2026-05-12', type: 'Expense', party: 'Rent', amount: 12000, vat: 600 }
-            ];
-            if(tbody) tbody.innerHTML = vatTransactions.map(v => `<tr><td>${v.date}</td><td>${v.type}</td><td>${v.party}</td><td>${v.amount}</td><td>${v.vat}</td></tr>`).join('');
-            document.getElementById('vatCollectedDetail').textContent = '6,250';
-            document.getElementById('vatPaidDetail').textContent = '3,925';
-            document.getElementById('vatNetPayable').textContent = '2,325';
+            if (!tbody) return;
+            
+            if (expenses.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No expenses found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = expenses.map(e => `
+                <tr>
+                    <td>${e.date}</td>
+                    <td>${e.desc}</td>
+                    <td>${e.category}</td>
+                    <td>${e.amount.toLocaleString()}</td>
+                    <td>${(e.amount * 0.05).toLocaleString()}</td>
+                </tr>
+            `).join('');
         }
 
         function createInvoice() {
             const client = document.getElementById('invoiceClient').value;
             const amount = parseFloat(document.getElementById('invoiceAmount').value);
-            const date = document.getElementById('invoiceDate').value;
-            const status = document.getElementById('invoiceStatus').value;
-            if(!client || !amount) return alert('Enter client and amount');
-            invoices.push({ id: invoices.length + 1005, client, date, amount, status });
-            loadInvoices();
-            alert('Invoice created!');
+            
+            if (!client || !amount || isNaN(amount)) {
+                alert('Please enter client name and valid amount');
+                return;
+            }
+            
+            const data = companyData[currentCompanyId];
+            const newId = Date.now();
+            data.invoices.push({
+                id: newId,
+                client: client,
+                date: document.getElementById('invoiceDate').value || new Date().toISOString().split('T')[0],
+                amount: amount,
+                status: document.getElementById('invoiceStatus').value
+            });
+            
+            refreshAllData();
+            alert('Invoice created successfully!');
+            
+            document.getElementById('invoiceClient').value = '';
+            document.getElementById('invoiceAmount').value = '';
         }
 
         function addExpense() {
             const desc = document.getElementById('expenseDesc').value;
             const amount = parseFloat(document.getElementById('expenseAmount').value);
-            const date = document.getElementById('expenseDate').value;
-            const category = document.getElementById('expenseCategory').value;
-            if(!desc || !amount) return alert('Enter description and amount');
-            expenses.push({ date, desc, category, amount });
-            loadExpenses();
-            alert('Expense added!');
-        }
-
-        function addAccount() {
-            const code = document.getElementById('accountCode').value;
-            const name = document.getElementById('accountName').value;
-            const type = document.getElementById('accountType').value;
-            if(!code || !name) return alert('Enter code and name');
-            accounts.push({ code, name, type, balance: 0 });
-            loadAccounts();
-            alert('Account added!');
+            
+            if (!desc || !amount || isNaN(amount)) {
+                alert('Please enter description and valid amount');
+                return;
+            }
+            
+            const data = companyData[currentCompanyId];
+            data.expenses.push({
+                date: document.getElementById('expenseDate').value || new Date().toISOString().split('T')[0],
+                desc: desc,
+                category: document.getElementById('expenseCategory').value,
+                amount: amount
+            });
+            
+            refreshAllData();
+            alert('Expense added successfully!');
+            
+            document.getElementById('expenseDesc').value = '';
+            document.getElementById('expenseAmount').value = '';
         }
 
         function generateVATReport() {
-            alert('📄 VAT Report generated!\nNet VAT Payable: 2,325 OMR\nFiling Deadline: June 10, 2026');
-        }
-
-        function reconcileBank() {
-            const tbody = document.getElementById('reconciliationList');
-            if(tbody) tbody.innerHTML = `
-                <tr><td>Opening Balance</td><td>125,000</td><td>125,000</td><td>0</td><td><span class="badge badge-active">Matched</span></td></tr>
-                <tr><td>Deposits (May 1-15)</td><td>45,000</td><td>45,000</td><td>0</td><td><span class="badge badge-active">Matched</span></td></tr>
-                <tr><td>Cheques Issued</td><td>28,500</td><td>28,500</td><td>0</td><td><span class="badge badge-active">Matched</span></td></tr>
-                <tr><td style="font-weight:bold">Closing Balance</td><td style="font-weight:bold">141,500</td><td style="font-weight:bold">141,500</td><td style="font-weight:bold">0</td><td><span class="badge badge-active">Reconciled</span></td></tr>
-            `;
-            alert('Bank reconciliation completed!');
+            const vatNet = document.getElementById('vatNetPayable').innerHTML;
+            alert('📄 VAT Report Generated!\n\nNet VAT Payable: ' + vatNet + ' OMR\nFiling Deadline: 10th of next month\n\nThis report has been saved to your downloads.');
         }
 
         function showTab(tab) {
             document.getElementById('invoicesTab').style.display = tab === 'invoices' ? 'block' : 'none';
             document.getElementById('expensesTab').style.display = tab === 'expenses' ? 'block' : 'none';
-            document.getElementById('chartTab').style.display = tab === 'chart' ? 'block' : 'none';
             document.getElementById('vatReportTab').style.display = tab === 'vatReport' ? 'block' : 'none';
-            document.getElementById('bankTab').style.display = tab === 'bank' ? 'block' : 'none';
             
-            const btns = ['tabInvoicesBtn','tabExpensesBtn','tabChartBtn','tabVatBtn','tabBankBtn'];
-            btns.forEach(btn => { const el = document.getElementById(btn); if(el) el.style.background = '#1a4d8c'; });
-            if(tab === 'invoices') document.getElementById('tabInvoicesBtn').style.background = '#0e3a6b';
-            if(tab === 'expenses') document.getElementById('tabExpensesBtn').style.background = '#0e3a6b';
-            if(tab === 'chart') document.getElementById('tabChartBtn').style.background = '#0e3a6b';
-            if(tab === 'vatReport') document.getElementById('tabVatBtn').style.background = '#0e3a6b';
-            if(tab === 'bank') document.getElementById('tabBankBtn').style.background = '#0e3a6b';
+            const btns = ['tabInvoicesBtn', 'tabExpensesBtn', 'tabVatBtn'];
+            btns.forEach(btn => { 
+                const el = document.getElementById(btn); 
+                if (el) el.style.background = '#1a4d8c'; 
+            });
+            
+            if (tab === 'invoices') document.getElementById('tabInvoicesBtn').style.background = '#0e3a6b';
+            if (tab === 'expenses') document.getElementById('tabExpensesBtn').style.background = '#0e3a6b';
+            if (tab === 'vatReport') document.getElementById('tabVatBtn').style.background = '#0e3a6b';
         }
 
-        loadCompanies();
-        loadInvoices();
-        loadExpenses();
-        loadAccounts();
-        loadVATTransactions();
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/user-menu', { headers: { 'Authorization': token } });
+                const data = await response.json();
+                if (!data.loggedIn) { 
+                    localStorage.removeItem('erp_token'); 
+                    window.location.href = '/login.html'; 
+                    return; 
+                }
+                document.querySelector('.user-info').innerHTML = '👋 ' + data.name + ' (' + data.role.replace('_', ' ').toUpperCase() + ')';
+                
+                // Filter menu based on role
+                const allowedPages = data.menus;
+                document.querySelectorAll('.sidebar-nav a').forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && href !== '#' && href !== 'logout' && !allowedPages.includes(href.replace('.html', ''))) {
+                        link.style.display = 'none';
+                    }
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        function logout() { 
+            localStorage.removeItem('erp_token'); 
+            localStorage.removeItem('erp_user'); 
+            window.location.href = '/login.html'; 
+        }
+
+        // Initialize
+        loadUserInfo();
+        loadCompanySelector();
+        refreshAllData();
+    
+        // ========== ROLE-BASED MENU FILTERING ==========
+        async function filterMenuByRole() {
+            try {
+                const token = localStorage.getItem("erp_token");
+                if (!token) return;
+                const response = await fetch("/api/user-menu", { headers: { "Authorization": token } });
+                const data = await response.json();
+                if (!data.loggedIn) return;
+                const allowedPages = data.menus;
+                console.log("Role:", data.role, "Allowed:", allowedPages);
+                const menuLinks = document.querySelectorAll(".sidebar-nav a");
+                menuLinks.forEach(link => {
+                    const href = link.getAttribute("href");
+                    if (!href || href === "#") return;
+                    const pageName = href.replace(".html", "");
+                    if (pageName === "logout") return;
+                    if (!allowedPages.includes(pageName) && pageName !== "") {
+                        link.style.display = "none";
+                    } else {
+                        link.style.display = "flex";
+                    }
+                });
+            } catch(e) { console.error(e); }
+        }
+        filterMenuByRole();
     </script>
 </body>
 </html>

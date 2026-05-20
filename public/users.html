@@ -21,8 +21,9 @@
                 <a href="accounting.html">💰 Accounting & VAT</a>
                 <a href="projects.html">📋 Project Management</a>
                 <a href="crm.html">🤝 CRM</a>
-		<a href="reports.html">📈 Reports</a>
+                <a href="reports.html">📈 Reports</a>
                 <a href="alerts.html">🔔 Alerts</a>
+                <a href="#" onclick="logout(); return false;" style="margin-top:30px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">🚪 Logout</a>
             </nav>
         </aside>
 
@@ -35,9 +36,8 @@
                 <div class="user-info">👋 Welcome, Admin</div>
             </header>
 
-            <h1>👤 User Management & Role Based Access Control (RBAC)</h1>
+            <h1>👤 User Management & Role Based Access Control</h1>
 
-            <!-- User Stats -->
             <div class="stats-grid">
                 <div class="stat-card"><h3 id="totalUsers">0</h3><p>Total Users</p></div>
                 <div class="stat-card"><h3 id="activeUsers">0</h3><p>Active Users</p></div>
@@ -45,435 +45,185 @@
                 <div class="stat-card vat"><h3 id="onlineNow">0</h3><p>Online Now</p></div>
             </div>
 
-            <!-- Tabs -->
-            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-                <button onclick="showTab('users')" id="tabUsersBtn" style="background:#1a4d8c;">👥 Users</button>
-                <button onclick="showTab('roles')" id="tabRolesBtn">🔐 Roles & Permissions</button>
-                <button onclick="showTab('activity')" id="tabActivityBtn">📋 Activity Log</button>
-                <button onclick="showTab('sessions')" id="tabSessionsBtn">🖥️ Active Sessions</button>
-            </div>
-
-            <!-- Users Tab -->
-            <div id="usersTab">
-                <div class="form-card">
-                    <h3>➕ Add New User</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
-                        <input type="text" id="userFullName" placeholder="Full Name">
-                        <input type="email" id="userEmail" placeholder="Email Address">
-                        <input type="text" id="userPhone" placeholder="Phone Number">
-                        <select id="userRole">
-                            <option value="admin">Administrator</option>
-                            <option value="hr_manager">HR Manager</option>
-                            <option value="finance_manager">Finance Manager</option>
-                            <option value="project_manager">Project Manager</option>
-                            <option value="supervisor">Supervisor</option>
-                            <option value="employee">Employee</option>
-                            <option value="client_viewer">Client Viewer</option>
-                        </select>
-                        <select id="userCompany">
-                            <option value="all">All Companies (Group Level)</option>
-                            <option value="1">Niyaz International LLC</option>
-                            <option value="2">Niyaz Facilities Management</option>
-                            <option value="3">Niyaz Technical Services</option>
-                        </select>
-                        <select id="userStatus">
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="suspended">Suspended</option>
-                        </select>
-                        <button onclick="addUser()">➕ Create User</button>
-                    </div>
-                </div>
-                <div class="table-container">
-                    <h3>📋 System Users</h3>
-                    <table id="usersTable">
-                        <thead>
-                            <tr>
-                                <th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Company Access</th>
-                                <th>Status</th><th>Last Login</th><th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersList"></tbody>
-                    </table>
+            <div class="form-card">
+                <h3>➕ Add New User</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 10px;">
+                    <input type="text" id="userName" placeholder="Full Name">
+                    <input type="email" id="userEmail" placeholder="Email">
+                    <input type="text" id="userPhone" placeholder="Phone">
+                    <select id="userRole">
+                        <option>Administrator</option><option>HR Manager</option><option>Finance Manager</option>
+                        <option>Project Manager</option><option>Supervisor</option><option>Employee</option>
+                    </select>
+                    <select id="userCompany">
+                        <option value="all">All Companies</option>
+                        <option value="1">Niyaz International LLC</option>
+                        <option value="2">Niyaz Facilities Management</option>
+                        <option value="3">Niyaz Technical Services</option>
+                    </select>
+                    <button onclick="addUser()">Create User</button>
                 </div>
             </div>
 
-            <!-- Roles & Permissions Tab -->
-            <div id="rolesTab" style="display:none;">
-                <div class="form-card">
-                    <h3>➕ Create New Role</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
-                        <input type="text" id="roleName" placeholder="Role Name (e.g., Operations Manager)">
-                        <input type="text" id="roleDescription" placeholder="Description">
-                        <button onclick="addRole()">Create Role</button>
-                    </div>
-                </div>
-
-                <!-- Role Cards -->
-                <div id="rolesContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 20px;"></div>
-
-                <!-- Permission Matrix -->
-                <div class="form-card" style="margin-top:20px;">
-                    <h3>📋 Permission Matrix</h3>
-                    <div class="table-container">
-                        <table id="permissionsTable">
-                            <thead>
-                                <tr>
-                                    <th>Module</th><th>View</th><th>Create</th><th>Edit</th><th>Delete</th><th>Export</th><th>Approve</th>
-                                </tr>
-                            </thead>
-                            <tbody id="permissionsList"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Activity Log Tab -->
-            <div id="activityTab" style="display:none;">
-                <div class="form-card">
-                    <h3>🔍 Filter Activity Log</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
-                        <input type="date" id="activityStartDate" placeholder="Start Date">
-                        <input type="date" id="activityEndDate" placeholder="End Date">
-                        <select id="activityUser">
-                            <option value="all">All Users</option>
-                        </select>
-                        <select id="activityAction">
-                            <option value="all">All Actions</option>
-                            <option>Login</option><option>Logout</option><option>Create</option><option>Update</option><option>Delete</option><option>Export</option>
-                        </select>
-                        <button onclick="filterActivity()">Filter</button>
-                        <button onclick="exportActivityLog()">📥 Export Log</button>
-                    </div>
-                </div>
-                <div class="table-container">
-                    <table id="activityTable">
-                        <thead>
-                            <tr>
-                                <th>Timestamp</th><th>User</th><th>Role</th><th>Action</th><th>Module</th><th>Details</th><th>IP Address</th>
-                            </tr>
-                        </thead>
-                        <tbody id="activityList"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Active Sessions Tab -->
-            <div id="sessionsTab" style="display:none;">
-                <div class="form-card">
-                    <h3>🖥️ Active User Sessions</h3>
-                    <div style="margin-bottom:15px;">
-                        <button onclick="terminateAllSessions()" style="background:#dc3545;">🚫 Terminate All Sessions</button>
-                        <button onclick="refreshSessions()">🔄 Refresh</button>
-                    </div>
-                </div>
-                <div class="table-container">
-                    <table id="sessionsTable">
-                        <thead>
-                            <tr>
-                                <th>User</th><th>Role</th><th>Login Time</th><th>Last Activity</th><th>Device</th><th>Browser</th><th>IP Address</th><th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="sessionsList"></tbody>
-                    </table>
-                </div>
+            <div class="table-container">
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Name</th><th>Email</th><th>Phone</th>
+                            <th>Role</th><th>Company Access</th><th>Status</th><th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersList"></tbody>
+                </table>
             </div>
         </main>
     </div>
 
     <script>
-        // Roles with permissions
-        const roles = {
-            admin: { name: 'Administrator', description: 'Full system access', level: 10 },
-            hr_manager: { name: 'HR Manager', description: 'Manage employees, attendance, payroll', level: 8 },
-            finance_manager: { name: 'Finance Manager', description: 'Manage accounting, invoices, VAT', level: 8 },
-            project_manager: { name: 'Project Manager', description: 'Manage projects, tasks, timesheets', level: 7 },
-            supervisor: { name: 'Supervisor', description: 'Mark attendance, view reports', level: 5 },
-            employee: { name: 'Employee', description: 'View own data, request leave', level: 3 },
-            client_viewer: { name: 'Client Viewer', description: 'View only assigned projects', level: 2 }
-        };
+        const token = localStorage.getItem('erp_token');
+        if (!token) { window.location.href = '/login.html'; }
 
-        // Permission definitions per role
-        const permissions = {
-            admin: { dashboard:7, company:7, users:7, hr:7, accounting:7, projects:7, crm:7, alerts:7 },
-            hr_manager: { dashboard:5, company:1, users:2, hr:7, accounting:1, projects:3, crm:3, alerts:5 },
-            finance_manager: { dashboard:5, company:1, users:1, hr:2, accounting:7, projects:4, crm:4, alerts:5 },
-            project_manager: { dashboard:5, company:1, users:1, hr:3, accounting:2, projects:7, crm:5, alerts:5 },
-            supervisor: { dashboard:3, company:0, users:0, hr:5, accounting:0, projects:3, crm:2, alerts:3 },
-            employee: { dashboard:2, company:0, users:0, hr:3, accounting:0, projects:1, crm:0, alerts:2 },
-            client_viewer: { dashboard:1, company:0, users:0, hr:0, accounting:0, projects:3, crm:0, alerts:0 }
-        };
-
-        let users = [
-            { id: 1, name: 'Admin User', email: 'admin@niyaz.com', phone: '91234567', role: 'admin', companyAccess: 'all', status: 'active', lastLogin: '2026-05-18 09:30 AM' },
-            { id: 2, name: 'Ahmed Al Hinai', email: 'ahmed.hr@niyaz.com', phone: '92345678', role: 'hr_manager', companyAccess: '1', status: 'active', lastLogin: '2026-05-18 08:15 AM' },
-            { id: 3, name: 'Salim Al Balushi', email: 'salim.finance@niyaz.com', phone: '93456789', role: 'finance_manager', companyAccess: 'all', status: 'active', lastLogin: '2026-05-17 04:30 PM' },
-            { id: 4, name: 'Mohammed Al Riyami', email: 'mohammed.pm@niyaz.com', phone: '94567890', role: 'project_manager', companyAccess: '2', status: 'active', lastLogin: '2026-05-18 10:00 AM' },
-            { id: 5, name: 'Rashid Al Saadi', email: 'rashid.supervisor@niyaz.com', phone: '95678901', role: 'supervisor', companyAccess: '1', status: 'active', lastLogin: '2026-05-18 07:45 AM' },
-            { id: 6, name: 'Khalid Al Shukaili', email: 'khalid@niyaz.com', phone: '96789012', role: 'employee', companyAccess: '1', status: 'inactive', lastLogin: '2026-05-10 02:00 PM' }
+        // All users with company access
+        let allUsers = [
+            { id: 1, name: 'Admin User', email: 'admin@niyaz.com', phone: '91234567', role: 'Administrator', companyId: 'all', status: 'Active', lastLogin: 'Today 09:30' },
+            { id: 2, name: 'Ahmed Al Hinai', email: 'ahmed.hr@niyaz.com', phone: '92345678', role: 'HR Manager', companyId: '1', status: 'Active', lastLogin: 'Today 08:15' },
+            { id: 3, name: 'Salim Al Balushi', email: 'salim.finance@niyaz.com', phone: '93456789', role: 'Finance Manager', companyId: 'all', status: 'Active', lastLogin: 'Yesterday' },
+            { id: 4, name: 'Mohammed Al Riyami', email: 'mohammed.pm@niyaz.com', phone: '94567890', role: 'Project Manager', companyId: '2', status: 'Active', lastLogin: 'Yesterday' },
+            { id: 5, name: 'Rashid Al Saadi', email: 'rashid.supervisor@niyaz.com', phone: '95678901', role: 'Supervisor', companyId: '3', status: 'Inactive', lastLogin: '2026-05-10' }
         ];
 
-        let activityLog = [
-            { timestamp: '2026-05-18 09:30:15', user: 'Admin User', role: 'Administrator', action: 'Login', module: 'System', details: 'Successful login', ip: '192.168.1.100' },
-            { timestamp: '2026-05-18 09:15:00', user: 'Ahmed Al Hinai', role: 'HR Manager', action: 'Create', module: 'HR', details: 'Added new employee: Salim', ip: '192.168.1.101' },
-            { timestamp: '2026-05-18 08:45:22', user: 'Salim Al Balushi', role: 'Finance Manager', action: 'Export', module: 'Accounting', details: 'Exported VAT report', ip: '192.168.1.102' },
-            { timestamp: '2026-05-17 16:30:00', user: 'Mohammed Al Riyami', role: 'Project Manager', action: 'Update', module: 'Projects', details: 'Updated project status', ip: '192.168.1.103' },
-            { timestamp: '2026-05-17 14:20:10', user: 'Rashid Al Saadi', role: 'Supervisor', action: 'Create', module: 'Attendance', details: 'Marked attendance for 12 workers', ip: '192.168.1.104' }
-        ];
+        let currentCompanyId = 'all';
 
-        let activeSessions = [
-            { user: 'Admin User', role: 'Administrator', loginTime: '09:30 AM', lastActivity: '09:45 AM', device: 'Windows PC', browser: 'Chrome', ip: '192.168.1.100' },
-            { user: 'Ahmed Al Hinai', role: 'HR Manager', loginTime: '08:15 AM', lastActivity: '09:30 AM', device: 'MacBook', browser: 'Safari', ip: '192.168.1.101' },
-            { user: 'Mohammed Al Riyami', role: 'Project Manager', loginTime: '10:00 AM', lastActivity: '10:05 AM', device: 'iPhone', browser: 'Safari', ip: '192.168.1.103' }
-        ];
-
-        function loadCompanies() {
-            const companies = ['Niyaz International LLC', 'Niyaz Facilities Management', 'Niyaz Technical Services'];
+        function loadCompanySelector() {
+            const companies = [
+                { id: 'all', name: 'All Companies' },
+                { id: '1', name: 'Niyaz International LLC' },
+                { id: '2', name: 'Niyaz Facilities Management' },
+                { id: '3', name: 'Niyaz Technical Services' }
+            ];
             const select = document.getElementById('companySelect');
-            if(select) select.innerHTML = companies.map(c => `<option>${c}</option>`).join('');
-        }
-
-        function loadUsers() {
-            const tbody = document.getElementById('usersList');
-            if(!tbody) return;
-            
-            tbody.innerHTML = users.map(u => {
-                const roleName = roles[u.role]?.name || u.role;
-                const companyName = u.companyAccess === 'all' ? 'All Companies' : 
-                                   (u.companyAccess === '1' ? 'Niyaz International LLC' :
-                                    u.companyAccess === '2' ? 'Niyaz Facilities Management' :
-                                    u.companyAccess === '3' ? 'Niyaz Technical Services' : u.companyAccess);
-                const statusClass = u.status === 'active' ? 'badge-active' : (u.status === 'inactive' ? 'badge-pending' : 'badge-danger');
-                
-                return `<tr>
-                    <td>${u.id}</td><td><strong>${u.name}</strong></td><td>${u.email}</td><td>${u.phone}</td>
-                    <td>${roleName}</td><td>${companyName}</td>
-                    <td><span class="badge ${statusClass}">${u.status}</span></td>
-                    <td>${u.lastLogin}</td>
-                    <td>
-                        <button onclick="editUser(${u.id})" style="background:#ffc107; padding:5px 10px;">✏️</button>
-                        <button onclick="resetPassword(${u.id})" style="background:#17a2b8; padding:5px 10px;">🔑</button>
-                        <button onclick="deleteUser(${u.id})" style="background:#dc3545; padding:5px 10px;">🗑️</button>
-                     </td>
-                </tr>`;
-            }).join('');
-            
-            document.getElementById('totalUsers').textContent = users.length;
-            document.getElementById('activeUsers').textContent = users.filter(u => u.status === 'active').length;
-            document.getElementById('totalRoles').textContent = Object.keys(roles).length;
-            document.getElementById('onlineNow').textContent = activeSessions.length;
-            
-            // Populate activity user filter
-            const activityUser = document.getElementById('activityUser');
-            if(activityUser) {
-                activityUser.innerHTML = '<option value="all">All Users</option>' + 
-                    users.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
+            if (select) {
+                select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                select.onchange = function() {
+                    currentCompanyId = this.value;
+                    loadUsers();
+                };
             }
         }
 
+        function loadUsers() {
+            let filteredUsers = allUsers;
+            
+            // Filter by company
+            if (currentCompanyId !== 'all') {
+                filteredUsers = allUsers.filter(u => u.companyId === 'all' || u.companyId === currentCompanyId);
+            }
+            
+            const tbody = document.getElementById('usersList');
+            if (tbody) {
+                tbody.innerHTML = filteredUsers.map(u => {
+                    const companyName = u.companyId === 'all' ? 'All Companies' : 
+                                       (u.companyId === '1' ? 'Niyaz International LLC' :
+                                        u.companyId === '2' ? 'Niyaz Facilities Management' : 'Niyaz Technical Services');
+                    return `<tr>
+                        <td>${u.id}</td>
+                        <td><strong>${u.name}</strong></td>
+                        <td>${u.email}</td>
+                        <td>${u.phone}</td>
+                        <td>${u.role}</td>
+                        <td>${companyName}</td>
+                        <td><span class="badge ${u.status === 'Active' ? 'badge-active' : 'badge-pending'}">${u.status}</span></td>
+                        <td><button onclick="deleteUser(${u.id})" style="background:#dc3545;padding:5px 10px;">🗑️</button></td>
+                    </tr>`;
+                }).join('');
+            }
+            
+            document.getElementById('totalUsers').textContent = filteredUsers.length;
+            document.getElementById('activeUsers').textContent = filteredUsers.filter(u => u.status === 'Active').length;
+            document.getElementById('totalRoles').textContent = '6';
+            document.getElementById('onlineNow').textContent = '3';
+        }
+
         function addUser() {
-            const name = document.getElementById('userFullName').value;
-            const email = document.getElementById('userEmail').value;
-            const phone = document.getElementById('userPhone').value;
-            const role = document.getElementById('userRole').value;
-            const companyAccess = document.getElementById('userCompany').value;
-            const status = document.getElementById('userStatus').value;
+            const name = document.getElementById('userName').value;
+            if (!name) return alert('Enter name');
             
-            if(!name || !email) return alert('Enter name and email');
-            
-            users.push({
-                id: users.length + 1,
-                name, email, phone, role, companyAccess, status,
+            const newId = allUsers.length + 1;
+            allUsers.push({
+                id: newId,
+                name: name,
+                email: document.getElementById('userEmail').value || `${name.toLowerCase().replace(/ /g, '.')}@niyaz.com`,
+                phone: document.getElementById('userPhone').value || 'XXXXXXXX',
+                role: document.getElementById('userRole').value,
+                companyId: document.getElementById('userCompany').value,
+                status: 'Active',
                 lastLogin: 'Never'
             });
             loadUsers();
-            alert(`User ${name} created with ${roles[role].name} role!`);
+            alert('User added!');
             
-            // Clear form
-            document.getElementById('userFullName').value = '';
+            document.getElementById('userName').value = '';
             document.getElementById('userEmail').value = '';
             document.getElementById('userPhone').value = '';
         }
 
-        function editUser(id) {
-            const user = users.find(u => u.id === id);
-            if(user) {
-                const newRole = prompt(`Edit role for ${user.name}\nCurrent: ${roles[user.role]?.name}\nAvailable: admin, hr_manager, finance_manager, project_manager, supervisor, employee, client_viewer`, user.role);
-                if(newRole && roles[newRole]) {
-                    user.role = newRole;
-                    loadUsers();
-                    alert(`Role updated to ${roles[newRole].name}`);
-                }
-                
-                const newStatus = prompt(`Edit status for ${user.name}\nCurrent: ${user.status}\nOptions: active, inactive, suspended`, user.status);
-                if(newStatus && ['active','inactive','suspended'].includes(newStatus)) {
-                    user.status = newStatus;
-                    loadUsers();
-                    alert(`Status updated to ${newStatus}`);
-                }
-            }
-        }
-
-        function resetPassword(id) {
-            const user = users.find(u => u.id === id);
-            if(user) {
-                alert(`Password reset email sent to ${user.email}\nTemporary password: ${user.name.replace(' ', '').toLowerCase()}@123`);
-            }
-        }
-
         function deleteUser(id) {
-            if(confirm('Delete this user? This action cannot be undone.')) {
-                users = users.filter(u => u.id !== id);
+            if (confirm('Delete this user?')) {
+                allUsers = allUsers.filter(u => u.id !== id);
                 loadUsers();
+                alert('User deleted!');
             }
         }
 
-        function loadRolesAndPermissions() {
-            const container = document.getElementById('rolesContainer');
-            if(!container) return;
-            
-            container.innerHTML = Object.entries(roles).map(([key, role]) => `
-                <div class="form-card" style="padding:15px;">
-                    <h3>${role.name}</h3>
-                    <p style="font-size:0.85rem; color:#6c757d;">${role.description}</p>
-                    <p><strong>Level:</strong> ${role.level}/10</p>
-                    <p><strong>Users:</strong> ${users.filter(u => u.role === key).length}</p>
-                    <div style="margin-top:10px;">
-                        <button onclick="editRole('${key}')" style="background:#ffc107;">✏️ Edit</button>
-                        ${key !== 'admin' ? `<button onclick="deleteRole('${key}')" style="background:#dc3545;">🗑️ Delete</button>` : ''}
-                    </div>
-                </div>
-            `).join('');
-            
-            // Load permission matrix
-            const permTbody = document.getElementById('permissionsList');
-            const modules = ['dashboard', 'company', 'users', 'hr', 'accounting', 'projects', 'crm', 'alerts'];
-            const moduleNames = { dashboard:'Dashboard', company:'Company Setup', users:'User Management', hr:'HR & Payroll', accounting:'Accounting & VAT', projects:'Projects', crm:'CRM', alerts:'Alerts' };
-            
-            permTbody.innerHTML = modules.map(module => `
-                <tr>
-                    <td><strong>${moduleNames[module]}</strong></td>
-                    ${Object.entries(roles).map(([roleKey, role]) => `
-                        <td style="text-align:center;">
-                            ${permissions[roleKey]?.[module] ? 
-                                `<span class="badge badge-active">${permissions[roleKey][module] === 7 ? '✓ Full' : permissions[roleKey][module] === 5 ? '✓ Read/Write' : permissions[roleKey][module] === 3 ? '✓ Read' : permissions[roleKey][module] === 2 ? '✓ Limited' : '✓ View'}</span>` : 
-                                '<span class="badge">—</span>'}
-                        </td>
-                    `).join('')}
-                 </tr>
-            `).join('');
+        async function loadUserInfo() {
+            const response = await fetch('/api/user-menu', { headers: { 'Authorization': token } });
+            const data = await response.json();
+            if (!data.loggedIn) { localStorage.removeItem('erp_token'); window.location.href = '/login.html'; return; }
+            document.querySelector('.user-info').innerHTML = '👋 ' + data.name + ' (' + data.role.replace('_', ' ').toUpperCase() + ')';
+            const allowedPages = data.menus;
+            document.querySelectorAll('.sidebar-nav a').forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href !== '#' && !allowedPages.includes(href.replace('.html', ''))) {
+                    link.style.display = 'none';
+                }
+            });
         }
 
-        function addRole() {
-            const name = document.getElementById('roleName').value;
-            const description = document.getElementById('roleDescription').value;
-            if(!name) return alert('Enter role name');
-            
-            const key = name.toLowerCase().replace(/ /g, '_');
-            roles[key] = { name, description, level: 5 };
-            permissions[key] = { dashboard:3, company:1, users:1, hr:3, accounting:1, projects:3, crm:2, alerts:3 };
-            
-            loadRolesAndPermissions();
-            alert(`Role "${name}" created! You can now assign this role to users.`);
+        function logout() { 
+            localStorage.removeItem('erp_token'); 
+            localStorage.removeItem('erp_user'); 
+            window.location.href = '/login.html'; 
         }
 
-        function editRole(roleKey) {
-            const role = roles[roleKey];
-            const newName = prompt('Edit role name:', role.name);
-            if(newName) role.name = newName;
-            const newLevel = prompt('Edit permission level (1-10):', role.level);
-            if(newLevel) role.level = parseInt(newLevel);
-            loadRolesAndPermissions();
-        }
-
-        function deleteRole(roleKey) {
-            if(confirm(`Delete role "${roles[roleKey].name}"? Users with this role will lose access.`)) {
-                delete roles[roleKey];
-                delete permissions[roleKey];
-                loadRolesAndPermissions();
-            }
-        }
-
-        function loadActivityLog() {
-            const tbody = document.getElementById('activityList');
-            if(tbody) {
-                tbody.innerHTML = activityLog.map(a => `
-                    <tr>
-                        <td>${a.timestamp}</td><td><strong>${a.user}</strong></td><td>${a.role}</td>
-                        <td><span class="badge badge-active">${a.action}</span></td><td>${a.module}</td>
-                        <td>${a.details}</td><td>${a.ip}</td>
-                     </tr>
-                `).join('');
-            }
-        }
-
-        function filterActivity() {
-            alert('Activity log filtered by selected criteria');
-            loadActivityLog();
-        }
-
-        function exportActivityLog() {
-            alert('📥 Activity log exported to CSV!\nFile: ActivityLog_May2026.csv');
-        }
-
-        function loadActiveSessions() {
-            const tbody = document.getElementById('sessionsList');
-            if(tbody) {
-                tbody.innerHTML = activeSessions.map(s => `
-                    <tr>
-                        <td><strong>${s.user}</strong></td><td>${s.role}</td><td>${s.loginTime}</td>
-                        <td>${s.lastActivity}</td><td>${s.device}</td><td>${s.browser}</td>
-                        <td>${s.ip}</td>
-                        <td><button onclick="terminateSession('${s.user}')" style="background:#dc3545; padding:5px 10px;">Terminate</button></td>
-                     </tr>
-                `).join('');
-            }
-        }
-
-        function terminateSession(user) {
-            if(confirm(`Terminate session for ${user}?`)) {
-                activeSessions = activeSessions.filter(s => s.user !== user);
-                loadActiveSessions();
-                alert(`Session terminated for ${user}`);
-            }
-        }
-
-        function terminateAllSessions() {
-            if(confirm('⚠️ WARNING: This will terminate ALL active sessions except yours. Continue?')) {
-                alert('All other sessions terminated.');
-            }
-        }
-
-        function refreshSessions() {
-            loadActiveSessions();
-        }
-
-        function showTab(tab) {
-            document.getElementById('usersTab').style.display = tab === 'users' ? 'block' : 'none';
-            document.getElementById('rolesTab').style.display = tab === 'roles' ? 'block' : 'none';
-            document.getElementById('activityTab').style.display = tab === 'activity' ? 'block' : 'none';
-            document.getElementById('sessionsTab').style.display = tab === 'sessions' ? 'block' : 'none';
-            
-            const btns = ['tabUsersBtn','tabRolesBtn','tabActivityBtn','tabSessionsBtn'];
-            btns.forEach(btn => { const el = document.getElementById(btn); if(el) el.style.background = '#1a4d8c'; });
-            if(tab === 'users') document.getElementById('tabUsersBtn').style.background = '#0e3a6b';
-            if(tab === 'roles') document.getElementById('tabRolesBtn').style.background = '#0e3a6b';
-            if(tab === 'activity') document.getElementById('tabActivityBtn').style.background = '#0e3a6b';
-            if(tab === 'sessions') document.getElementById('tabSessionsBtn').style.background = '#0e3a6b';
-            
-            if(tab === 'roles') loadRolesAndPermissions();
-            if(tab === 'activity') loadActivityLog();
-            if(tab === 'sessions') loadActiveSessions();
-        }
-
-        // Update sidebar to include Users link
-        function updateSidebar() {
-            // The sidebar already has the users.html link
-        }
-
-        loadCompanies();
+        loadUserInfo();
+        loadCompanySelector();
         loadUsers();
-        loadRolesAndPermissions();
+    
+        // ========== ROLE-BASED MENU FILTERING ==========
+        async function filterMenuByRole() {
+            try {
+                const token = localStorage.getItem("erp_token");
+                if (!token) return;
+                const response = await fetch("/api/user-menu", { headers: { "Authorization": token } });
+                const data = await response.json();
+                if (!data.loggedIn) return;
+                const allowedPages = data.menus;
+                console.log("Role:", data.role, "Allowed:", allowedPages);
+                const menuLinks = document.querySelectorAll(".sidebar-nav a");
+                menuLinks.forEach(link => {
+                    const href = link.getAttribute("href");
+                    if (!href || href === "#") return;
+                    const pageName = href.replace(".html", "");
+                    if (pageName === "logout") return;
+                    if (!allowedPages.includes(pageName) && pageName !== "") {
+                        link.style.display = "none";
+                    } else {
+                        link.style.display = "flex";
+                    }
+                });
+            } catch(e) { console.error(e); }
+        }
+        filterMenuByRole();
     </script>
 </body>
 </html>

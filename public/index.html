@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Niyaz Group ERP</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
                 <img src="niyaz_logo.png" alt="Niyaz">
@@ -23,93 +21,165 @@
                 <a href="accounting.html">💰 Accounting & VAT</a>
                 <a href="projects.html">📋 Project Management</a>
                 <a href="crm.html">🤝 CRM</a>
-		<a href="reports.html">📈 Reports</a>
+                <a href="reports.html">📈 Reports</a>
                 <a href="alerts.html">🔔 Alerts</a>
+               <a href="#" onclick="logout(); return false;" style="margin-top:30px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">🚪 Logout</a>
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
             <header>
                 <div class="company-selector">
                     <label>🏢 Select Company:</label>
                     <select id="companySelect"></select>
                 </div>
-                <div class="user-info">
-                    <span>👋 Welcome, Admin</span>
-                </div>
+                <div class="user-info">👋 Welcome, Admin</div>
             </header>
 
-            <div id="dashboardContent">
-                <h1>Dashboard</h1>
-                
-                <div class="stats-grid" id="statsGrid">
-                    <div class="stat-card">
-                        <h3 id="totalWorkers">0</h3>
-                        <p>Total Workers</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="totalProjects">0</h3>
-                        <p>Active Projects</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="totalClients">0</h3>
-                        <p>Total Clients</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3 id="totalRevenue">0</h3>
-                        <p>Revenue (OMR)</p>
-                    </div>
-                    <div class="stat-card vat">
-                        <h3 id="vatDue">0</h3>
-                        <p>VAT Due (5%)</p>
-                    </div>
-                </div>
+            <h1>Dashboard</h1>
+            
+            <div class="stats-grid">
+                <div class="stat-card"><h3 id="totalWorkers">0</h3><p>Total Workers</p></div>
+                <div class="stat-card"><h3 id="totalProjects">0</h3><p>Active Projects</p></div>
+                <div class="stat-card"><h3 id="totalClients">0</h3><p>Total Clients</p></div>
+                <div class="stat-card"><h3 id="totalRevenue">0</h3><p>Revenue (OMR)</p></div>
+                <div class="stat-card vat"><h3 id="vatDue">0</h3><p>VAT Due (5%)</p></div>
+            </div>
 
-                <div class="recent-activity">
-                    <h3>📌 Recent Alerts</h3>
-                    <div id="alertsList"></div>
-                </div>
+            <div class="recent-activity">
+                <h3>📌 Recent Alerts</h3>
+                <div id="alertsList"></div>
             </div>
         </main>
     </div>
 
     <script>
-        let companies = [];
-        
+        // Check authentication
+        const token = localStorage.getItem('erp_token');
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        // Load dashboard data
         async function loadCompanies() {
-            const res = await fetch('/api/companies');
-            companies = await res.json();
-            const select = document.getElementById('companySelect');
-            select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            select.onchange = () => loadStats(select.value);
-            loadStats(select.value);
-            loadAlerts();
+            try {
+                const res = await fetch('/api/companies');
+                const companies = await res.json();
+                const select = document.getElementById('companySelect');
+                select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                select.onchange = () => {
+                    loadStats(select.value);
+                    loadAlerts(select.value);
+                };
+                loadStats(select.value);
+                loadAlerts(select.value);
+            } catch(e) {
+                console.error('Error loading companies:', e);
+            }
         }
-        
+
         async function loadStats(companyId) {
-            const res = await fetch(`/api/stats/${companyId}`);
-            const stats = await res.json();
-            document.getElementById('totalWorkers').textContent = stats.workers;
-            document.getElementById('totalProjects').textContent = stats.projects;
-            document.getElementById('totalClients').textContent = stats.clients;
-            document.getElementById('totalRevenue').textContent = stats.revenue.toLocaleString();
-            document.getElementById('vatDue').textContent = stats.vatDue.toLocaleString();
+            try {
+                const res = await fetch(`/api/stats/${companyId}`);
+                const stats = await res.json();
+                document.getElementById('totalWorkers').textContent = stats.workers || 0;
+                document.getElementById('totalProjects').textContent = stats.projects || 0;
+                document.getElementById('totalClients').textContent = stats.clients || 0;
+                document.getElementById('totalRevenue').textContent = (stats.revenue || 0).toLocaleString();
+                document.getElementById('vatDue').textContent = (stats.vatDue || 0).toLocaleString();
+            } catch(e) {
+                console.error('Error loading stats:', e);
+            }
         }
-        
-        async function loadAlerts() {
-            const res = await fetch('/api/alerts');
-            const alerts = await res.json();
-            const container = document.getElementById('alertsList');
-            container.innerHTML = alerts.map(a => `
-                <div class="alert alert-${a.type}">
-                    <strong>${a.message}</strong>
-                    <small>Due: ${a.date}</small>
-                </div>
-            `).join('');
+
+        async function loadAlerts(companyId) {
+            try {
+                const res = await fetch(`/api/alerts/${companyId}`);
+                const alerts = await res.json();
+                const container = document.getElementById('alertsList');
+                if (alerts.length === 0) {
+                    container.innerHTML = '<div class="alert alert-info">No new alerts</div>';
+                    return;
+                }
+                container.innerHTML = alerts.map(a => `
+                    <div class="alert alert-${a.type}">
+                        <strong>${a.message}</strong><br>
+                        <small>Due: ${a.date}</small>
+                    </div>
+                `).join('');
+            } catch(e) {
+                console.error('Error loading alerts:', e);
+            }
         }
-        
+
+        // Load user info and filter menu
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/user-menu', { headers: { 'Authorization': token } });
+                const data = await response.json();
+                if (!data.loggedIn) {
+                    localStorage.removeItem('erp_token');
+                    window.location.href = '/login.html';
+                    return;
+                }
+                const userInfo = document.querySelector('.user-info');
+                if (userInfo) {
+                    userInfo.innerHTML = '👋 ' + data.name + ' (' + data.role.replace('_', ' ').toUpperCase() + ')';
+                }
+                
+                // Filter menu based on role
+                const allowedPages = data.menus;
+                const menuLinks = document.querySelectorAll('.sidebar-nav a');
+                menuLinks.forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (!href || href === '#') return;
+                    const pageName = href.replace('.html', '');
+                    if (pageName !== '' && !allowedPages.includes(pageName)) {
+                        link.style.display = 'none';
+                    }
+                });
+            } catch(e) {
+                console.error('Error loading user info:', e);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('erp_token');
+            localStorage.removeItem('erp_user');
+            window.location.href = '/login.html';
+            return false;
+        }
+
+        // Initialize
+        loadUserInfo();
         loadCompanies();
+    
+        // ========== ROLE-BASED MENU FILTERING ==========
+        async function filterMenuByRole() {
+            try {
+                const token = localStorage.getItem("erp_token");
+                if (!token) return;
+                const response = await fetch("/api/user-menu", { headers: { "Authorization": token } });
+                const data = await response.json();
+                if (!data.loggedIn) return;
+                const allowedPages = data.menus;
+                console.log("Role:", data.role, "Allowed:", allowedPages);
+                const menuLinks = document.querySelectorAll(".sidebar-nav a");
+                menuLinks.forEach(link => {
+                    const href = link.getAttribute("href");
+                    if (!href || href === "#") return;
+                    const pageName = href.replace(".html", "");
+                    if (pageName === "logout") return;
+                    if (!allowedPages.includes(pageName) && pageName !== "") {
+                        link.style.display = "none";
+                    } else {
+                        link.style.display = "flex";
+                    }
+                });
+            } catch(e) { console.error(e); }
+        }
+        filterMenuByRole();
     </script>
 </body>
 </html>
