@@ -15,6 +15,104 @@
         .status-approved { background: #28a745; color: white; }
         .status-converted { background: #1a4d8c; color: white; }
         .status-rejected { background: #dc3545; color: white; }
+        
+        .line-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .line-items-table th, .line-items-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .line-items-table th {
+            background-color: #f2f2f2;
+        }
+        .line-items-table input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .remove-item {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .add-item {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .totals-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: right;
+        }
+        .totals-box p {
+            margin: 5px 0;
+        }
+        .grand-total {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #1a4d8c;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 900px;
+            border-radius: 10px;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+        .close-modal {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+        }
+        .close-modal:hover {
+            color: black;
+        }
+        
+        .btn-pdf {
+            background: #dc3545;
+            margin-left: 5px;
+        }
+        .btn-pdf:hover {
+            background: #bb2d3b;
+        }
+        .btn-view {
+            background: #17a2b8;
+            margin-left: 5px;
+        }
+        .btn-view:hover {
+            background: #138496;
+        }
     </style>
 </head>
 <body>
@@ -63,7 +161,7 @@
                 <button onclick="showTab('contracts')" id="tabContractsBtn">📄 Contracts</button>
             </div>
 
-            <!-- ==================== CLIENTS TAB ==================== -->
+            <!-- Clients Tab -->
             <div id="clientsTab">
                 <div class="form-card">
                     <h3>➕ Add New Client</h3>
@@ -77,15 +175,13 @@
                 </div>
                 <div class="table-container">
                     <table id="clientsTable">
-                        <thead>
-                            <tr><th>Company</th><th>Contact</th><th>Phone</th><th>Email</th><th>Status</th><th>Action</th></tr>
-                        </thead>
+                        <thead><tr><th>Company</th><th>Contact</th><th>Phone</th><th>Email</th><th>Status</th><th>Action</th></tr></thead>
                         <tbody id="clientsList"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- ==================== LEADS TAB ==================== -->
+            <!-- Leads Tab -->
             <div id="leadsTab" style="display:none;">
                 <div class="form-card">
                     <h3>➕ Add New Lead</h3>
@@ -108,22 +204,57 @@
                 </div>
             </div>
 
-            <!-- ==================== QUOTATIONS TAB ==================== -->
+            <!-- Quotations Tab -->
             <div id="quotationsTab" style="display:none;">
                 <div class="form-card">
                     <h3>📄 Create New Quotation</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;">
-                        <select id="quotationClient">
-                            <option value="">-- Select Client --</option>
-                        </select>
-                        <input type="text" id="quotationTitle" placeholder="Quotation Title / Service">
-                        <input type="number" id="quotationAmount" placeholder="Amount (OMR)">
-                        <input type="date" id="quotationDate">
-                        <input type="date" id="quotationValidUntil">
-                        <select id="quotationStatus">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 10px;">
+                        <div>
+                            <label>Select Client:</label>
+                            <select id="quotationClient" style="width:100%; padding:8px;">
+                                <option value="">-- Select Client --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Valid Until:</label>
+                            <input type="date" id="quotationValidUntil" style="width:100%; padding:8px;">
+                        </div>
+                    </div>
+                    
+                    <h4>📋 Line Items</h4>
+                    <table class="line-items-table" id="lineItemsTable">
+                        <thead>
+                            <tr>
+                                <th style="width:40%">Description / Service</th>
+                                <th style="width:15%">Quantity</th>
+                                <th style="width:20%">Unit Price (OMR)</th>
+                                <th style="width:15%">Total (OMR)</th>
+                                <th style="width:10%">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lineItemsBody">
+                            <tr class="line-item-row">
+                                <td><input type="text" class="item-desc" placeholder="e.g., HVAC Maintenance" style="width:100%"></td>
+                                <td><input type="number" class="item-qty" value="1" min="1" style="width:100%"></td>
+                                <td><input type="number" class="item-price" value="0" min="0" step="0.01" style="width:100%"></td>
+                                <td><input type="text" class="item-total" readonly style="width:100%; background:#f0f0f0"></td>
+                                <td style="text-align:center"><button type="button" class="remove-item" style="background:#dc3545; padding:5px 10px;">✗</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" class="add-item" onclick="addLineItem()">+ Add Item</button>
+                    
+                    <div class="totals-box">
+                        <p><strong>Subtotal:</strong> <span id="subtotal">0.00</span> OMR</p>
+                        <p><strong>VAT (5%):</strong> <span id="vatAmount">0.00</span> OMR</p>
+                        <p class="grand-total"><strong>Grand Total:</strong> <span id="grandTotal">0.00</span> OMR</p>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 10px; margin-top: 15px;">
+                        <select id="quotationStatus" style="padding:8px;">
                             <option>Draft</option><option>Sent</option><option>Approved</option><option>Rejected</option>
                         </select>
-                        <button onclick="createQuotation()">Create Quotation</button>
+                        <button onclick="createQuotation()" style="background:#1a4d8c;">✅ Create Quotation</button>
                     </div>
                 </div>
 
@@ -139,7 +270,7 @@
                     <table id="quotationsTable">
                         <thead>
                             <tr>
-                                <th>Q#</th><th>Date</th><th>Client</th><th>Title</th><th>Amount</th><th>VAT (5%)</th><th>Total</th><th>Valid Until</th><th>Status</th><th>Actions</th>
+                                <th>Q#</th><th>Date</th><th>Client</th><th>Title</th><th>Amount</th><th>VAT</th><th>Total</th><th>Valid Until</th><th>Status</th><th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="quotationsList"></tbody>
@@ -159,7 +290,7 @@
                 </div>
             </div>
 
-            <!-- ==================== CONTRACTS TAB ==================== -->
+            <!-- Contracts Tab -->
             <div id="contractsTab" style="display:none;">
                 <div class="form-card">
                     <h3>➕ Add Contract</h3>
@@ -178,74 +309,55 @@
                     <table id="contractsTable">
                         <thead><tr><th>Client</th><th>Title</th><th>Value (OMR)</th><th>Start Date</th><th>End Date</th><th>Status</th><th>Action</th></tr></thead>
                         <tbody id="contractsList"></tbody>
-                    </tr>
+                    </table>
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal for Viewing Quotation -->
+    <div id="quotationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
     </div>
 
     <script>
         const token = localStorage.getItem('erp_token');
         if (!token) { window.location.href = '/login.html'; }
 
-        // ========== COMPANY-SPECIFIC CRM DATA ==========
-        const companyCRMData = {
-            1: { // Niyaz International LLC
-                clients: [
-                    { id: 1, name: 'Al Mouj Group', contact: 'Ahmed Al Harthy', phone: '91234567', email: 'ahmed@almouj.com', status: 'Active' },
-                    { id: 2, name: 'Oman Air', contact: 'Salim Al Kindi', phone: '92345678', email: 'salim@omanair.com', status: 'Active' }
-                ],
-                leads: [
-                    { id: 1, name: 'Oman Oil', company: 'OOC', phone: '94567890', value: 250000, status: 'Negotiation' }
-                ],
-                quotations: [
-                    { id: 'Q-001', date: '2026-05-10', client: 'Al Mouj Group', title: 'Annual Facility Management', amount: 450000, validUntil: '2026-06-10', status: 'Approved' },
-                    { id: 'Q-002', date: '2026-05-12', client: 'Oman Oil', title: 'HVAC Maintenance', amount: 125000, validUntil: '2026-06-12', status: 'Sent' }
-                ],
-                contracts: [
-                    { id: 1, client: 'Al Mouj Group', title: 'Facility Management', value: 450000, start: '2026-01-01', end: '2026-12-31', status: 'Active' },
-                    { id: 2, client: 'Oman Air', title: 'HVAC Maintenance', value: 125000, start: '2026-04-01', end: '2027-03-31', status: 'Active' }
-                ]
-            },
-            2: { // Niyaz Facilities Management
-                clients: [
-                    { id: 1, name: 'City Centre Mall', contact: 'Mohammed Al Balushi', phone: '93456789', email: 'mohammed@citycentre.com', status: 'Active' },
-                    { id: 2, name: 'Bank Muscat', contact: 'Rashid Al Hinai', phone: '94567890', email: 'rashid@bankmuscat.com', status: 'Active' }
-                ],
-                leads: [
-                    { id: 1, name: 'Omantel', company: 'Omantel', phone: '95678901', value: 180000, status: 'Contacted' }
-                ],
-                quotations: [
-                    { id: 'Q-101', date: '2026-05-08', client: 'City Centre Mall', title: 'Cleaning Services', amount: 95000, validUntil: '2026-06-08', status: 'Approved' }
-                ],
-                contracts: [
-                    { id: 1, client: 'City Centre Mall', title: 'Cleaning Services', value: 95000, start: '2026-01-01', end: '2026-12-31', status: 'Active' }
-                ]
-            },
-            3: { // Niyaz Technical Services
-                clients: [
-                    { id: 1, name: 'Oman Airports', contact: 'Khalid Al Hinai', phone: '95678901', email: 'khalid@omanairports.com', status: 'Active' },
-                    { id: 2, name: 'Petroleum Development Oman', contact: 'Ali Al Lawati', phone: '96789012', email: 'ali@pdo.com', status: 'Lead' }
-                ],
-                leads: [
-                    { id: 1, name: 'Oman Broadband', company: 'OBC', phone: '97890123', value: 300000, status: 'New' }
-                ],
-                quotations: [
-                    { id: 'Q-201', date: '2026-05-05', client: 'Oman Airports', title: 'Security Systems', amount: 75000, validUntil: '2026-06-05', status: 'Sent' }
-                ],
-                contracts: [
-                    { id: 1, client: 'Oman Airports', title: 'Security Systems', value: 75000, start: '2026-03-01', end: '2027-02-28', status: 'Active' }
-                ]
+        // ========== DATA STORAGE ==========
+        let clients = [
+            { id: 1, name: 'Al Mouj Group', contact: 'Ahmed', phone: '91234567', email: 'ahmed@almouj.com', status: 'Active' },
+            { id: 2, name: 'majidtek', contact: 'Majid', phone: '91293119', email: 'majid@example.com', status: 'Active' }
+        ];
+        
+        let leads = [
+            { id: 1, name: 'Oman Oil', company: 'OOC', phone: '94567890', value: 250000, status: 'Negotiation' }
+        ];
+        
+        // QUOTATIONS ARRAY WITH DATA - THIS IS THE IMPORTANT PART
+        let quotations = [
+            { 
+                id: 'Q-001', 
+                date: '2026-05-20', 
+                client: 'majidtek', 
+                title: 'PC Repair Service', 
+                amount: 100, 
+                vat: 5, 
+                total: 105, 
+                validUntil: '2026-05-28', 
+                status: 'Draft', 
+                items: [{ description: 'PC Repair Service', quantity: 1, unitPrice: 100, total: 100 }] 
             }
-        };
+        ];
+        
+        let contracts = [
+            { id: 1, client: 'Al Mouj Group', title: 'Facility Management', value: 450000, start: '2026-01-01', end: '2026-12-31', status: 'Active' }
+        ];
 
-        let currentCompanyId = 1;
-        let clients = [];
-        let leads = [];
-        let quotations = [];
-        let contracts = [];
-
-        // ========== LOAD COMPANY SELECTOR ==========
+        // ========== COMPANY SELECTOR ==========
         function loadCompanySelector() {
             const companies = [
                 { id: 1, name: 'Niyaz International LLC' },
@@ -256,69 +368,113 @@
             if (select) {
                 select.innerHTML = companies.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
                 select.onchange = function() {
-                    currentCompanyId = parseInt(this.value);
-                    loadCompanyData();
+                    // For now, just keep same data across companies for demo
+                    loadClients();
+                    loadLeads();
+                    loadQuotations();
+                    loadContracts();
                 };
-                loadCompanyData();
             }
         }
 
-        function loadCompanyData() {
-            const data = companyCRMData[currentCompanyId];
-            clients = JSON.parse(JSON.stringify(data.clients));
-            leads = JSON.parse(JSON.stringify(data.leads));
-            quotations = JSON.parse(JSON.stringify(data.quotations));
-            contracts = JSON.parse(JSON.stringify(data.contracts));
-            
-            loadClients();
-            loadLeads();
-            loadQuotations();
-            loadContracts();
-            updateStats();
+        // ========== LINE ITEMS FUNCTIONS ==========
+        function addLineItem() {
+            const tbody = document.getElementById('lineItemsBody');
+            const newRow = document.createElement('tr');
+            newRow.className = 'line-item-row';
+            newRow.innerHTML = `
+                <td><input type="text" class="item-desc" placeholder="Service Description" style="width:100%"></td>
+                <td><input type="number" class="item-qty" value="1" min="1" style="width:100%"></td>
+                <td><input type="number" class="item-price" value="0" min="0" step="0.01" style="width:100%"></td>
+                <td><input type="text" class="item-total" readonly style="width:100%; background:#f0f0f0"></td>
+                <td style="text-align:center"><button type="button" class="remove-item" style="background:#dc3545; padding:5px 10px;">✗</button></td>
+            `;
+            tbody.appendChild(newRow);
+            attachLineItemEvents(newRow);
+            updateTotals();
         }
 
-        function updateStats() {
-            document.getElementById('totalClients').textContent = clients.length;
-            document.getElementById('totalContracts').textContent = contracts.length;
-            document.getElementById('totalLeads').textContent = leads.length;
-            document.getElementById('contractValue').textContent = contracts.reduce((s,c)=>s+c.value,0).toLocaleString();
+        function attachLineItemEvents(row) {
+            const qtyInput = row.querySelector('.item-qty');
+            const priceInput = row.querySelector('.item-price');
+            const totalInput = row.querySelector('.item-total');
+            const removeBtn = row.querySelector('.remove-item');
+            
+            const calculateTotal = () => {
+                const qty = parseFloat(qtyInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                const total = qty * price;
+                totalInput.value = total.toFixed(2);
+                updateTotals();
+            };
+            
+            qtyInput.addEventListener('input', calculateTotal);
+            priceInput.addEventListener('input', calculateTotal);
+            
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => {
+                    row.remove();
+                    updateTotals();
+                });
+            }
+            calculateTotal();
+        }
+
+        function updateTotals() {
+            let subtotal = 0;
+            document.querySelectorAll('.line-item-row').forEach(row => {
+                const totalInput = row.querySelector('.item-total');
+                if (totalInput && totalInput.value) {
+                    subtotal += parseFloat(totalInput.value) || 0;
+                }
+            });
+            const vat = subtotal * 0.05;
+            const grandTotal = subtotal + vat;
+            document.getElementById('subtotal').textContent = subtotal.toFixed(2);
+            document.getElementById('vatAmount').textContent = vat.toFixed(2);
+            document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
+        }
+
+        function getLineItems() {
+            const items = [];
+            document.querySelectorAll('.line-item-row').forEach(row => {
+                const desc = row.querySelector('.item-desc')?.value || '';
+                const qty = parseFloat(row.querySelector('.item-qty')?.value) || 0;
+                const price = parseFloat(row.querySelector('.item-price')?.value) || 0;
+                const total = qty * price;
+                if (desc && qty > 0 && price > 0) {
+                    items.push({ description: desc, quantity: qty, unitPrice: price, total: total });
+                }
+            });
+            return items;
         }
 
         // ========== CLIENTS ==========
         function loadClients() {
             const tbody = document.getElementById('clientsList');
-            if (!tbody) return;
-            tbody.innerHTML = clients.map(c => `<tr>
-                <td><strong>${c.name}</strong></td>
-                <td>${c.contact}</td>
-                <td>${c.phone}</td>
-                <td>${c.email}</td>
-                <td><span class="badge badge-active">${c.status}</span></td>
-                <td><button onclick="deleteClient(${c.id})" style="background:#dc3545;padding:5px 10px;">🗑️</button></td>
-            </tr>`).join('');
+            if (tbody) {
+                tbody.innerHTML = clients.map(c => `
+                    <tr>
+                        <td><strong>${c.name}</strong></td>
+                        <td>${c.contact}</td>
+                        <td>${c.phone}</td>
+                        <td>${c.email}</td>
+                        <td><span class="badge badge-active">${c.status}</span></td>
+                        <td><button onclick="deleteClient(${c.id})" style="background:#dc3545;padding:5px 10px;">🗑️</button></td>
+                    </tr>
+                `).join('');
+            }
+            const select = document.getElementById('quotationClient');
+            if (select) {
+                select.innerHTML = '<option value="">-- Select Client --</option>' + clients.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+            }
             updateStats();
-            
-            // Update dropdowns
-            const clientSelects = ['quotationClient', 'contractClient'];
-            clientSelects.forEach(id => {
-                const sel = document.getElementById(id);
-                if (sel) {
-                    sel.innerHTML = '<option value="">-- Select Client --</option>' + clients.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
-                }
-            });
         }
 
         function addClient() {
             const name = document.getElementById('clientName').value;
             if (!name) return alert('Enter client name');
-            clients.push({
-                id: clients.length + 1,
-                name: name,
-                contact: document.getElementById('clientContact').value || '-',
-                phone: document.getElementById('clientPhone').value || '-',
-                email: document.getElementById('clientEmail').value || '-',
-                status: 'Active'
-            });
+            clients.push({ id: clients.length + 1, name, contact: document.getElementById('clientContact').value || '-', phone: document.getElementById('clientPhone').value || '-', email: document.getElementById('clientEmail').value || '-', status: 'Active' });
             loadClients();
             alert('Client added!');
             document.getElementById('clientName').value = '';
@@ -334,29 +490,24 @@
         // ========== LEADS ==========
         function loadLeads() {
             const tbody = document.getElementById('leadsList');
-            if (!tbody) return;
-            tbody.innerHTML = leads.map(l => `<tr>
-                <td>${l.name}</td>
-                <td>${l.company}</td>
-                <td>${l.phone}</td>
-                <td>${l.value.toLocaleString()}</td>
-                <td><span class="badge badge-pending">${l.status}</span></td>
-                <td><button onclick="deleteLead(${l.id})" style="background:#dc3545;padding:5px 10px;">🗑️</button></td>
-            </tr>`).join('');
-            updateStats();
+            if (tbody) {
+                tbody.innerHTML = leads.map(l => `
+                    <tr>
+                        <td>${l.name}</td>
+                        <td>${l.company}</td>
+                        <td>${l.phone}</td>
+                        <td>${l.value.toLocaleString()}</td>
+                        <td><span class="badge badge-pending">${l.status}</span></td>
+                        <td><button onclick="deleteLead(${l.id})" style="background:#dc3545;padding:5px 10px;">🗑️</button></td>
+                    </tr>
+                `).join('');
+            }
         }
 
         function addLead() {
             const name = document.getElementById('leadName').value;
             if (!name) return alert('Enter lead name');
-            leads.push({
-                id: leads.length + 1,
-                name: name,
-                company: document.getElementById('leadCompany').value || '-',
-                phone: document.getElementById('leadPhone').value || '-',
-                value: parseFloat(document.getElementById('leadValue').value) || 0,
-                status: document.getElementById('leadStatus').value
-            });
+            leads.push({ id: leads.length + 1, name, company: document.getElementById('leadCompany').value || '-', phone: document.getElementById('leadPhone').value || '-', value: parseFloat(document.getElementById('leadValue').value) || 0, status: document.getElementById('leadStatus').value });
             loadLeads();
             alert('Lead added!');
             document.getElementById('leadName').value = '';
@@ -367,152 +518,351 @@
             loadLeads();
         }
 
-        // ========== QUOTATIONS ==========
+        // ========== CREATE QUOTATION ==========
+        function createQuotation() {
+            const client = document.getElementById('quotationClient').value;
+            const validUntil = document.getElementById('quotationValidUntil').value;
+            const status = document.getElementById('quotationStatus').value;
+            const items = getLineItems();
+            
+            if (!client) { alert('Please select a client'); return; }
+            if (items.length === 0 || items.every(i => i.total === 0)) { alert('Please add at least one line item'); return; }
+            
+            const subtotal = parseFloat(document.getElementById('subtotal').textContent);
+            const vat = parseFloat(document.getElementById('vatAmount').textContent);
+            const grandTotal = parseFloat(document.getElementById('grandTotal').textContent);
+            const title = items.length === 1 ? items[0].description : `${items.length} Services`;
+            const newId = `Q-${String(quotations.length + 1).padStart(3, '0')}`;
+            
+            quotations.push({
+                id: newId,
+                date: new Date().toISOString().split('T')[0],
+                client: client,
+                title: title,
+                amount: subtotal,
+                vat: vat,
+                total: grandTotal,
+                validUntil: validUntil || new Date().toISOString().split('T')[0],
+                status: status,
+                items: items
+            });
+            
+            loadQuotations();
+            alert(`✅ Quotation ${newId} created!\nTotal: ${grandTotal.toFixed(2)} OMR`);
+            resetQuotationForm();
+        }
+
+        function resetQuotationForm() {
+            const tbody = document.getElementById('lineItemsBody');
+            tbody.innerHTML = `
+                <tr class="line-item-row">
+                    <td><input type="text" class="item-desc" placeholder="Service Description" style="width:100%"></td>
+                    <td><input type="number" class="item-qty" value="1" min="1" style="width:100%"></td>
+                    <td><input type="number" class="item-price" value="0" min="0" step="0.01" style="width:100%"></td>
+                    <td><input type="text" class="item-total" readonly style="width:100%; background:#f0f0f0"></td>
+                    <td style="text-align:center"><button type="button" class="remove-item" style="background:#dc3545; padding:5px 10px;">✗</button></td>
+                </tr>
+            `;
+            const firstRow = document.querySelector('.line-item-row');
+            if (firstRow) attachLineItemEvents(firstRow);
+            updateTotals();
+            document.getElementById('quotationClient').value = '';
+            document.getElementById('quotationValidUntil').value = '';
+        }
+
+        // ========== LOAD QUOTATIONS ==========
         function loadQuotations() {
             const tbody = document.getElementById('quotationsList');
             if (!tbody) return;
             
             let totalValue = 0;
-            let pendingCount = 0;
-            let approvedCount = 0;
-            
             tbody.innerHTML = quotations.map(q => {
-                const vat = q.amount * 0.05;
-                const total = q.amount + vat;
                 totalValue += q.amount;
-                if (q.status === 'Sent' || q.status === 'Draft') pendingCount++;
-                if (q.status === 'Approved') approvedCount++;
-                
                 let statusClass = '';
                 if (q.status === 'Draft') statusClass = 'status-draft';
                 else if (q.status === 'Sent') statusClass = 'status-sent';
                 else if (q.status === 'Approved') statusClass = 'status-approved';
-                else if (q.status === 'Rejected') statusClass = 'status-rejected';
+                else statusClass = 'status-rejected';
                 
-                return `<tr>
-                    <td><strong>${q.id}</strong></td>
-                    <td>${q.date}</td>
-                    <td>${q.client}</td>
-                    <td>${q.title}</td>
-                    <td>${q.amount.toLocaleString()}</td>
-                    <td>${vat.toLocaleString()}</td>
-                    <td><strong>${total.toLocaleString()}</strong></td>
-                    <td>${q.validUntil}</td>
-                    <td><span class="status-badge ${statusClass}">${q.status}</span></td>
-                    <td>
-                        ${q.status === 'Draft' ? `<button onclick="sendQuotation('${q.id}')" style="background:#17a2b8;padding:5px 8px;">✉️ Send</button>` : ''}
-                        ${q.status === 'Sent' ? `<button onclick="approveQuotation('${q.id}')" style="background:#28a745;padding:5px 8px;">✓ Approve</button>` : ''}
-                        <button onclick="deleteQuotation('${q.id}')" style="background:#dc3545;padding:5px 8px;">🗑️</button>
-                    </td>
-                </tr>`;
+                return `
+                    <tr>
+                        <td><strong>${q.id}</strong></td>
+                        <td>${q.date}</td>
+                        <td>${q.client}</td>
+                        <td>${q.title}</td>
+                        <td>${q.amount.toLocaleString()}</td>
+                        <td>${q.vat.toLocaleString()}</td>
+                        <td><strong>${q.total.toLocaleString()}</strong></td>
+                        <td>${q.validUntil}</td>
+                        <td><span class="status-badge ${statusClass}">${q.status}</span></td>
+                        <td>
+                            ${q.status === 'Draft' ? `<button onclick="sendQuotation('${q.id}')" style="background:#17a2b8;padding:5px 8px;">✉️ Send</button>` : ''}
+                            ${q.status === 'Sent' ? `<button onclick="approveQuotation('${q.id}')" style="background:#28a745;padding:5px 8px;">✓ Approve</button>` : ''}
+                            <button onclick="viewQuotation('${q.id}')" style="background:#17a2b8;padding:5px 8px;">👁️ View</button>
+                            <button onclick="exportQuotationToPDF('${q.id}')" style="background:#dc3545;padding:5px 8px;">📄 PDF</button>
+                            <button onclick="deleteQuotation('${q.id}')" style="background:#6c757d;padding:5px 8px;">🗑️</button>
+                        </td>
+                    </tr>
+                `;
             }).join('');
             
             document.getElementById('totalQuotations').textContent = quotations.length;
-            document.getElementById('pendingQuotations').textContent = pendingCount;
-            document.getElementById('approvedQuotations').textContent = approvedCount;
+            document.getElementById('pendingQuotations').textContent = quotations.filter(q => q.status === 'Sent' || q.status === 'Draft').length;
+            document.getElementById('approvedQuotations').textContent = quotations.filter(q => q.status === 'Approved').length;
             document.getElementById('quotationValue').textContent = totalValue.toLocaleString();
             
-            // Update convert dropdown
             const convertSelect = document.getElementById('convertQuotation');
             if (convertSelect) {
-                const approvedQuotations = quotations.filter(q => q.status === 'Approved');
                 convertSelect.innerHTML = '<option value="">-- Select Quotation --</option>' + 
-                    approvedQuotations.map(q => `<option value="${q.id}">${q.id} - ${q.client} (${q.amount.toLocaleString()} OMR)</option>`).join('');
+                    quotations.filter(q => q.status === 'Approved').map(q => `<option value="${q.id}">${q.id} - ${q.client} (${q.total.toLocaleString()} OMR)</option>`).join('');
             }
         }
 
-        function createQuotation() {
-            const client = document.getElementById('quotationClient').value;
-            const title = document.getElementById('quotationTitle').value;
-            const amount = parseFloat(document.getElementById('quotationAmount').value);
+        // ========== PDF GENERATION ==========
+        function exportQuotationToPDF(quotationId) {
+    const q = quotations.find(q => q.id === quotationId);
+    if (!q) {
+        alert('Quotation not found');
+        return;
+    }
+    
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    
+    let itemsHtml = '';
+    q.items.forEach((item, idx) => {
+        itemsHtml += `
+            <tr>
+                <td>${idx + 1}</td>
+                <td>${item.description}</td>
+                <td>${item.quantity}</td>
+                <td>${item.unitPrice.toFixed(2)}</td>
+                <td>${item.total.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+    
+    const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Quotation ${q.id}</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 40px; background: white; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1a4d8c; padding-bottom: 20px; }
+        .header h1 { color: #1a4d8c; margin: 0; }
+        .header h3 { color: #666; margin: 5px 0; }
+        .company-info { float: left; text-align: left; }
+        .quotation-info { float: right; text-align: right; }
+        .clearfix { clear: both; overflow: auto; }
+        .client-info { margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 8px; }
+        .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .items-table th, .items-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .items-table th { background-color: #1a4d8c; color: white; }
+        .totals { text-align: right; margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px; }
+        .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #ddd; padding-top: 20px; }
+        .button-bar { text-align: center; margin-top: 20px; padding: 10px; }
+        button { background: #1a4d8c; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 0 5px; }
+        button.close { background: #6c757d; }
+        @media print { body { margin: 0; padding: 20px; } .no-print { display: none; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="company-info">
+            <h1>NIYAZ INTERNATIONAL LLC</h1>
+            <h3>Facility Management Services</h3>
+            <p>P.O. Box 1234, Muscat, Oman<br>Tel: +968 1234 5678 | Email: info@niyaz.com</p>
+        </div>
+        <div class="quotation-info">
+            <h2>QUOTATION</h2>
+            <p><strong>Quotation No:</strong> ${q.id}<br>
+            <strong>Date:</strong> ${q.date}<br>
+            <strong>Valid Until:</strong> ${q.validUntil}</p>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    
+    <div class="client-info">
+        <p><strong>Client:</strong> ${q.client}</p>
+    </div>
+    
+    <!-- TABLE COMES BEFORE TOTALS - FIXED -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Sl No.</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Unit Price (OMR)</th>
+                <th>Total (OMR)</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${itemsHtml}
+        </tbody>
+    </table>
+    
+    <div class="totals">
+        <p><strong>Subtotal:</strong> ${q.amount.toLocaleString()} OMR</p>
+        <p><strong>VAT (5%):</strong> ${q.vat.toLocaleString()} OMR</p>
+        <p style="font-size: 18px;"><strong>Grand Total:</strong> ${q.total.toLocaleString()} OMR</p>
+    </div>
+    
+    <div class="footer">
+        <p>Terms & Conditions: 1. Valid until date above. 2. Payment: 50% advance, 50% upon completion. 3. Prices include VAT.</p>
+        <p>Thank you for your business!</p>
+    </div>
+    
+    <div class="button-bar no-print">
+        <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+        <button class="close" onclick="window.close()">Close</button>
+    </div>
+</div>
+<script>setTimeout(function() { window.print(); }, 500);<\/script>
+</body>
+</html>`;
+    
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+}
+
+        // ========== QUOTATION ACTIONS ==========
+        function viewQuotation(quotationId) {
+    const q = quotations.find(q => q.id === quotationId);
+    if (!q) {
+        alert('Quotation not found');
+        return;
+    }
+    
+    let itemsHtml = '';
+    if (q.items && q.items.length > 0) {
+        q.items.forEach((item, idx) => {
+            itemsHtml += `
+                <tr>
+                    <td style="border:1px solid #ddd; padding:10px;">${idx + 1}</td>
+                    <td style="border:1px solid #ddd; padding:10px;">${item.description}</td>
+                    <td style="border:1px solid #ddd; padding:10px;">${item.quantity}</td>
+                    <td style="border:1px solid #ddd; padding:10px;">${item.unitPrice.toFixed(2)}</td>
+                    <td style="border:1px solid #ddd; padding:10px;">${item.total.toFixed(2)}</td>
+                </tr>
+            `;
+        });
+    } else {
+        itemsHtml = `
+            <tr>
+                <td colspan="5" style="text-align:center;">No items found</td>
+            </tr>
+        `;
+    }
+    
+    const modalContent = document.getElementById('modalContent');
+    modalContent.innerHTML = `
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; padding: 20px;">
+            <div style="text-align:center; margin-bottom:30px; border-bottom:2px solid #1a4d8c; padding-bottom:20px;">
+                <div style="float:left; text-align:left;">
+                    <h1 style="color:#1a4d8c; margin:0;">NIYAZ INTERNATIONAL LLC</h1>
+                    <h3 style="color:#666; margin:5px 0;">Facility Management Services</h3>
+                    <p>P.O. Box 1234, Muscat, Oman<br>Tel: +968 1234 5678 | Email: info@niyaz.com</p>
+                </div>
+                <div style="float:right; text-align:right;">
+                    <h2>QUOTATION</h2>
+                    <p><strong>Quotation No:</strong> ${q.id}<br>
+                    <strong>Date:</strong> ${q.date}<br>
+                    <strong>Valid Until:</strong> ${q.validUntil}</p>
+                </div>
+                <div style="clear:both;"></div>
+            </div>
             
-            if (!client || !title || !amount) {
-                alert('Please fill all fields');
-                return;
-            }
+            <div style="margin:20px 0; padding:15px; background:#f5f5f5; border-radius:8px;">
+                <p><strong>Client:</strong> ${q.client}</p>
+            </div>
             
-            const newId = `Q-${String(quotations.length + 1).padStart(3, '0')}`;
-            quotations.push({
-                id: newId,
-                date: document.getElementById('quotationDate').value || new Date().toISOString().split('T')[0],
-                client: client,
-                title: title,
-                amount: amount,
-                validUntil: document.getElementById('quotationValidUntil').value || new Date().toISOString().split('T')[0],
-                status: document.getElementById('quotationStatus').value
-            });
-            loadQuotations();
-            alert('Quotation created!');
+            <table style="width:100%; border-collapse:collapse; margin:20px 0;">
+                <thead>
+                    <tr style="background:#1a4d8c; color:white;">
+                        <th style="border:1px solid #ddd; padding:10px;">Sl No.</th>
+                        <th style="border:1px solid #ddd; padding:10px;">Description</th>
+                        <th style="border:1px solid #ddd; padding:10px;">Quantity</th>
+                        <th style="border:1px solid #ddd; padding:10px;">Unit Price (OMR)</th>
+                        <th style="border:1px solid #ddd; padding:10px;">Total (OMR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemsHtml}
+                </tbody>
+            </table>
             
-            document.getElementById('quotationTitle').value = '';
-            document.getElementById('quotationAmount').value = '';
-        }
+            <div style="text-align:right; margin-top:20px; padding:15px; background:#f5f5f5; border-radius:8px;">
+                <p><strong>Subtotal:</strong> ${q.amount.toLocaleString()} OMR</p>
+                <p><strong>VAT (5%):</strong> ${q.vat.toLocaleString()} OMR</p>
+                <p style="font-size: 18px;"><strong>Grand Total:</strong> ${q.total.toLocaleString()} OMR</p>
+            </div>
+            
+            <div style="margin-top:40px; text-align:center; font-size:12px; color:#999; border-top:1px solid #ddd; padding-top:20px;">
+                <p>Terms & Conditions: 1. Valid until date above. 2. Payment: 50% advance, 50% upon completion. 3. Prices include VAT.</p>
+                <p>Thank you for your business!</p>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('quotationModal').style.display = 'block';
+}
 
         function sendQuotation(id) {
             const q = quotations.find(q => q.id === id);
-            if (q) {
-                q.status = 'Sent';
-                loadQuotations();
-                alert(`Quotation ${id} sent to client!`);
-            }
+            if (q) { q.status = 'Sent'; loadQuotations(); alert(`Quotation ${id} sent to client!`); }
         }
-
+        
         function approveQuotation(id) {
             const q = quotations.find(q => q.id === id);
-            if (q) {
-                q.status = 'Approved';
-                loadQuotations();
-                alert(`Quotation ${id} approved! You can now convert it to a contract.`);
-            }
+            if (q) { q.status = 'Approved'; loadQuotations(); alert(`Quotation ${id} approved!`); }
         }
-
+        
         function deleteQuotation(id) {
             if (confirm('Delete this quotation?')) {
                 quotations = quotations.filter(q => q.id !== id);
                 loadQuotations();
             }
         }
-
+        
         function convertToContract() {
-            const quotationId = document.getElementById('convertQuotation').value;
-            const startDate = document.getElementById('contractStartDate').value;
+            const id = document.getElementById('convertQuotation').value;
+            const q = quotations.find(q => q.id === id);
+            if (!q) { alert('Select a quotation'); return; }
             
-            if (!quotationId) {
-                alert('Please select a quotation');
-                return;
-            }
-            
-            const quotation = quotations.find(q => q.id === quotationId);
-            if (quotation) {
-                quotation.status = 'Converted';
-                contracts.push({
-                    id: contracts.length + 1,
-                    client: quotation.client,
-                    title: quotation.title,
-                    value: quotation.amount,
-                    start: startDate || new Date().toISOString().split('T')[0],
-                    end: document.getElementById('contractEndDate').value || '2026-12-31',
-                    status: 'Active'
-                });
-                loadQuotations();
-                loadContracts();
-                alert(`Quotation ${quotationId} converted to contract!`);
-            }
+            q.status = 'Converted';
+            contracts.push({
+                id: contracts.length + 1,
+                client: q.client,
+                title: q.title,
+                value: q.total,
+                start: document.getElementById('contractStartDate').value || new Date().toISOString().split('T')[0],
+                end: document.getElementById('contractEndDate').value || '2026-12-31',
+                status: 'Active'
+            });
+            loadQuotations();
+            loadContracts();
+            alert(`Quotation ${id} converted to contract!`);
         }
 
         // ========== CONTRACTS ==========
         function loadContracts() {
             const tbody = document.getElementById('contractsList');
-            if (!tbody) return;
-            tbody.innerHTML = contracts.map(c => `<tr>
-                <td>${c.client}</td>
-                <td>${c.title}</td>
-                <td>${c.value.toLocaleString()}</td>
-                <td>${c.start}</td>
-                <td>${c.end}</td>
-                <td><span class="badge badge-active">${c.status}</span></td>
-                <td><button onclick="deleteContract(${c.id})" style="background:#dc3545;padding:5px 10px;">🗑️</button></td>
-            </tr>`).join('');
+            if (tbody) {
+                tbody.innerHTML = contracts.map(c => `
+                    <tr>
+                        <td>${c.client}</td>
+                        <td>${c.title}</td>
+                        <td>${c.value.toLocaleString()}</td>
+                        <td>${c.start}</td>
+                        <td>${c.end}</td>
+                        <td><span class="badge badge-active">${c.status}</span></td>
+                        <td><button onclick="deleteContract(${c.id})" style="background:#dc3545;padding:5px 10px;">🗑️</button></td>
+                    </tr>
+                `).join('');
+            }
             updateStats();
         }
 
@@ -520,24 +870,10 @@
             const client = document.getElementById('contractClient').value;
             const title = document.getElementById('contractTitle').value;
             const value = parseFloat(document.getElementById('contractValue').value);
-            
-            if (!client || !title || !value) {
-                alert('Please fill all fields');
-                return;
-            }
-            
-            contracts.push({
-                id: contracts.length + 1,
-                client: client,
-                title: title,
-                value: value,
-                start: document.getElementById('contractStart').value || new Date().toISOString().split('T')[0],
-                end: document.getElementById('contractEnd').value || '2026-12-31',
-                status: 'Active'
-            });
+            if (!client || !title || !value) { alert('Fill all fields'); return; }
+            contracts.push({ id: contracts.length + 1, client, title, value, start: document.getElementById('contractStart').value || new Date().toISOString().split('T')[0], end: document.getElementById('contractEnd').value || '2026-12-31', status: 'Active' });
             loadContracts();
             alert('Contract added!');
-            
             document.getElementById('contractTitle').value = '';
             document.getElementById('contractValue').value = '';
         }
@@ -547,6 +883,14 @@
                 contracts = contracts.filter(c => c.id !== id);
                 loadContracts();
             }
+        }
+
+        // ========== STATS ==========
+        function updateStats() {
+            document.getElementById('totalClients').textContent = clients.length;
+            document.getElementById('totalContracts').textContent = contracts.length;
+            document.getElementById('totalLeads').textContent = leads.length;
+            document.getElementById('contractValue').textContent = contracts.reduce((s,c)=>s+c.value,0).toLocaleString();
         }
 
         // ========== TAB SWITCHING ==========
@@ -573,24 +917,34 @@
             document.querySelector('.user-info').innerHTML = '👋 ' + data.name + ' (' + data.role.replace('_', ' ').toUpperCase() + ')';
             
             const allowedPages = data.menus;
-            const menuLinks = document.querySelectorAll('.sidebar-nav a');
-            menuLinks.forEach(link => {
+            document.querySelectorAll('.sidebar-nav a').forEach(link => {
                 const href = link.getAttribute('href');
                 if (!href || href === '#') return;
                 const pageName = href.replace('.html', '');
                 if (pageName === 'logout') return;
                 if (!allowedPages.includes(pageName) && pageName !== '') {
                     link.style.display = 'none';
-                } else {
-                    link.style.display = 'flex';
                 }
             });
         }
 
         function logout() { localStorage.removeItem('erp_token'); localStorage.removeItem('erp_user'); window.location.href = '/login.html'; }
+        function closeModal() { document.getElementById('quotationModal').style.display = 'none'; }
+        
+        function init() {
+            const firstRow = document.querySelector('.line-item-row');
+            if (firstRow) attachLineItemEvents(firstRow);
+        }
 
         loadMenu();
         loadCompanySelector();
+        loadClients();
+        loadLeads();
+        loadQuotations();
+        loadContracts();
+        init();
+        
+        window.onclick = function(event) { const modal = document.getElementById('quotationModal'); if (event.target === modal) modal.style.display = 'none'; }
     </script>
 </body>
 </html>
