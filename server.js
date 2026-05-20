@@ -158,6 +158,32 @@ app.get('/api/employees/:companyId', (req, res) => {
     res.json(data.employees);
 });
 
+// Chart data endpoint
+app.get('/api/chart-data/:companyId', (req, res) => {
+    const chartData = {
+        1: {
+            revenue: [18500, 19200, 20100, 21500, 22800, 24500],
+            skills: { HVAC: 18, Cleaning: 12, MEP: 8, Security: 5, General: 2 },
+            attendance: [89, 92, 87, 94, 91, 88, 93],
+            sites: { 'Al Mouj Tower': 22, 'City Centre Mall': 15, 'Oman Air HQ': 8 }
+        },
+        2: {
+            revenue: [12000, 13500, 14800, 15600, 16800, 17500],
+            skills: { HVAC: 8, Cleaning: 10, MEP: 5, Security: 3, General: 2 },
+            attendance: [85, 88, 86, 90, 87, 89, 91],
+            sites: { 'Industrial Area': 18, 'Seeb Facility': 10 }
+        },
+        3: {
+            revenue: [7500, 8200, 8900, 9500, 10200, 10800],
+            skills: { HVAC: 6, Cleaning: 4, MEP: 5, Security: 3, General: 1 },
+            attendance: [90, 92, 89, 93, 91, 94, 92],
+            sites: { 'Airport': 12, 'Technical Center': 7 }
+        }
+    };
+    const companyId = req.params.companyId;
+    res.json(chartData[companyId] || chartData[1]);
+});
+
 // Serve pages
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
@@ -172,8 +198,11 @@ app.get('/:page.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', `${page}.html`));
 });
 
+
+
 // Start server
 app.listen(port, '0.0.0.0', () => {
     console.log(`🚀 Niyaz ERP running at http://localhost:${port}`);
     console.log(`📧 Login: admin@niyaz.com / admin123`);
 });
+
